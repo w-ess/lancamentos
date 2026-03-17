@@ -24,7 +24,9 @@ public static class ConfiguracaoInfraestrutura
         }
 
         services.AddDbContext<LancamentosDbContext>(opcoes =>
-            opcoes.UseNpgsql(connectionString));
+            opcoes.UseNpgsql(
+                connectionString,
+                npgsql => npgsql.EnableRetryOnFailure()));
 
         services.AddOptions<RabbitMqOpcoes>()
             .Bind(configuration.GetSection(RabbitMqOpcoes.Secao))

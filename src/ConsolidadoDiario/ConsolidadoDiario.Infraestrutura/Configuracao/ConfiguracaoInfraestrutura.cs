@@ -22,7 +22,9 @@ public static class ConfiguracaoInfraestrutura
         }
 
         services.AddDbContext<ConsolidadoDiarioDbContext>(opcoes =>
-            opcoes.UseNpgsql(connectionString));
+            opcoes.UseNpgsql(
+                connectionString,
+                npgsql => npgsql.EnableRetryOnFailure()));
 
         services.AddScoped<IConsolidadoDiarioRepositorio, ConsolidadoDiarioRepositorio>();
         services.AddSingleton<IRelogioUtc, RelogioSistemaUtc>();

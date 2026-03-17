@@ -3,6 +3,7 @@ using ConsolidadoDiario.Api.Endpoints;
 using ConsolidadoDiario.Api.Erros;
 using ConsolidadoDiario.Aplicacao.CasosDeUso.ConsultarSaldoDiario;
 using ConsolidadoDiario.Infraestrutura.Configuracao;
+using ConsolidadoDiario.Infraestrutura.Persistencia;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,8 @@ builder.Services.AddSingleton(consultaSaldoOpcoes);
 builder.Services.AddScoped<ConsultarSaldoDiarioPorDataCasoDeUso>();
 
 var app = builder.Build();
+
+await app.MigrarBancoDadosConsolidadoDiarioAsync();
 
 app.UseExceptionHandler();
 app.UseAuthentication();

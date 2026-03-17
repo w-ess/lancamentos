@@ -4,6 +4,7 @@ using Lancamentos.Api.Erros;
 using Lancamentos.Aplicacao.CasosDeUso.ConsultarLancamento;
 using Lancamentos.Aplicacao.CasosDeUso.RegistrarLancamento;
 using Lancamentos.Infraestrutura.Configuracao;
+using Lancamentos.Infraestrutura.Persistencia;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,8 @@ builder.Services.AddScoped<RegistrarLancamentoCasoDeUso>();
 builder.Services.AddScoped<ConsultarLancamentoPorIdCasoDeUso>();
 
 var app = builder.Build();
+
+await app.MigrarBancoDadosLancamentosAsync();
 
 app.UseExceptionHandler();
 app.UseAuthentication();

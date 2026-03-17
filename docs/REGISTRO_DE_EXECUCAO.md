@@ -6,9 +6,9 @@ Toda vez que uma tarefa for concluida, este arquivo deve ser atualizado para que
 
 ## Resumo atual
 
-- Estado geral: T01, T02, T03, T04, T05, T06, T07 e T08 concluidas; aguardando inicio da T09
-- Ultima tarefa concluida: T08 - Implementar autenticacao e autorizacao
-- Proxima tarefa: T09 - Subir toda a infraestrutura com Docker Compose
+- Estado geral: T01, T02, T03, T04, T05, T06, T07, T08 e T09 concluidas; aguardando inicio da T10
+- Ultima tarefa concluida: T09 - Subir toda a infraestrutura com Docker Compose
+- Proxima tarefa: T10 - Implementar testes de integracao ponta a ponta
 - Ultima atualizacao: 2026-03-17
 - Bloqueios conhecidos: nenhum
 
@@ -135,3 +135,15 @@ Copiar o modelo abaixo ao concluir cada tarefa:
 - Decisoes tomadas: usar a claim padrao `scope` com escopos separados por espaco em vez de uma claim proprietaria; manter a chave de assinatura obrigatoria via variavel de ambiente e deixar `Issuer`, `Audience` e expiracao com valores padrao overrideaveis; configurar o middleware JWT via options para respeitar configuracoes finais do host de teste e do runtime; manter um script bash simples como utilitario local de geracao de token para nao acoplar a tarefa a um novo projeto auxiliar.
 - Pendencias: nenhuma dentro do escopo da T08; a orquestracao completa com Docker Compose, incluindo bancos, RabbitMQ e servicos autenticados, segue para a T09.
 - Proxima tarefa recomendada: T09 - Subir toda a infraestrutura com Docker Compose.
+
+## T09 - Subir toda a infraestrutura com Docker Compose
+
+- Status: concluida
+- Data: 2026-03-17
+- Objetivo da tarefa: permitir execucao local completa com um unico comando, incluindo PostgreSQL, RabbitMQ, APIs autenticadas e processador do consolidado.
+- O que foi feito: criado o `docker-compose.yml` com os servicos `postgres`, `rabbitmq`, `api-lancamentos`, `api-consolidado` e `processador-consolidado`, volumes persistentes, rede dedicada e healthchecks; criado um `Dockerfile` reutilizavel para os tres processos .NET e `.dockerignore` para reduzir o contexto de build; adicionada a inicializacao automatica de migrations no startup das APIs e retry de conexao do EF Core para evitar passos manuais antes do `docker compose up`; criado o script `scripts/docker/postgres-init.sh` para provisionar `lancamentos_db` e `consolidado_db`; criado `.env.example` com portas e parametros de autenticacao; validado o ambiente com `docker compose up -d`, confirmacao de todos os containers em estado `healthy`, geracao de JWT local, `POST` em `http://localhost:8081/api/v1/lancamentos/` e leitura bem-sucedida do consolidado em `http://localhost:8082/api/v1/saldos-diarios/2026-03-17`, comprovando o fluxo completo entre API transacional, RabbitMQ e processador.
+- Arquivos criados ou alterados: `.dockerignore`; `.env.example`; `Dockerfile`; `docker-compose.yml`; `scripts/docker/postgres-init.sh`; `src/Lancamentos/Lancamentos.Api/Program.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Configuracao/ConfiguracaoInfraestrutura.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/InicializacaoBancoDadosLancamentosExtensions.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Api/Program.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Infraestrutura/Configuracao/ConfiguracaoInfraestrutura.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Infraestrutura/ConsolidadoDiario.Infraestrutura.csproj`; `src/ConsolidadoDiario/ConsolidadoDiario.Infraestrutura/Persistencia/InicializacaoBancoDadosConsolidadoDiarioExtensions.cs`; `docs/REGISTRO_DE_EXECUCAO.md`.
+- Testes executados: `dotnet build FluxoDeCaixa.sln -c Release`; `dotnet test FluxoDeCaixa.sln -c Release --no-build --logger 'console;verbosity=minimal'` com 62 testes aprovados; `docker compose config`; `docker compose up --build -d` na primeira tentativa, identificando conflito de porta do host em `5432` e motivando o ajuste dos defaults expostos; `docker compose up -d` com os novos defaults, seguido de `docker compose ps` com todos os servicos em `healthy`; geracao de token com `Autenticacao__ChaveAssinatura='uma-chave-local-com-pelo-menos-32-bytes' ./scripts/gerar_token_jwt_local.sh lancamentos.escrita lancamentos.leitura consolidado.leitura`; validacao manual do fluxo com `POST /api/v1/lancamentos/` retornando `201` e `GET /api/v1/saldos-diarios/2026-03-17` retornando `TotalCreditos=150.75`, `Saldo=150.75` e `Defasado=false`; encerramento do ambiente com `docker compose down -v --remove-orphans`.
+- Decisoes tomadas: usar um unico container PostgreSQL com script de inicializacao para criar os dois bancos do projeto; manter um unico `Dockerfile` parametrizado por projeto e DLL para evitar duplicacao; aplicar migrations automaticamente no startup das APIs e deixar o processador dependente da API de consolidado saudavel para evitar corrida de migracoes no mesmo banco; habilitar `EnableRetryOnFailure` no Npgsql para melhorar resiliencia de startup; expor portas altas por padrao (`55432`, `55672` e `55673`) para reduzir conflito com instancias locais ja em execucao na maquina hospedeira.
+- Pendencias: nenhuma dentro do escopo da T09; permanecem apenas os avisos esperados de Data Protection em containers efemeros das APIs, sem impacto no fluxo autenticado com JWT HS256 configurado por ambiente.
+- Proxima tarefa recomendada: T10 - Implementar testes de integracao ponta a ponta.
