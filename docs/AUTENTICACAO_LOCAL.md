@@ -52,18 +52,18 @@ JWT_SUBJECT="avaliador-local" TOKEN="$(./scripts/gerar_token_jwt_local.sh consol
 ## Exemplos de uso
 
 ```bash
-curl -X POST "http://localhost:5001/api/v1/lancamentos" \
+curl -X POST "http://localhost:8081/api/v1/lancamentos" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"Tipo":"Credito","Valor":125.50,"DataLancamento":"2026-03-17"}'
 ```
 
 ```bash
-curl "http://localhost:5001/api/v1/lancamentos/<id>" \
+curl "http://localhost:8081/api/v1/lancamentos/<id>" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ```bash
-curl "http://localhost:5002/api/v1/saldos-diarios/2026-03-17" \
+curl "http://localhost:8082/api/v1/saldos-diarios/2026-03-17" \
   -H "Authorization: Bearer $TOKEN"
 ```
