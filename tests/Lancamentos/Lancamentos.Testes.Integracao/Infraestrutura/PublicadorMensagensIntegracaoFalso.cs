@@ -6,7 +6,7 @@ namespace Lancamentos.Testes.Integracao.Infraestrutura;
 public sealed class PublicadorMensagensIntegracaoFalso : IPublicadorMensagensIntegracao
 {
     private readonly object _trava = new();
-    private readonly List<MensagemSaida> _mensagensPublicadas = new();
+    private readonly List<OutboxMessage> _mensagensPublicadas = new();
     private int _falhasRestantes;
 
     public void DefinirFalhasRestantes(int falhasRestantes)
@@ -14,9 +14,9 @@ public sealed class PublicadorMensagensIntegracaoFalso : IPublicadorMensagensInt
         _falhasRestantes = falhasRestantes;
     }
 
-    public Task PublicarAsync(MensagemSaida mensagemSaida, CancellationToken cancellationToken = default)
+    public Task PublicarAsync(OutboxMessage outboxMessage, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(mensagemSaida);
+        ArgumentNullException.ThrowIfNull(outboxMessage);
 
         lock (_trava)
         {
@@ -26,13 +26,13 @@ public sealed class PublicadorMensagensIntegracaoFalso : IPublicadorMensagensInt
                 throw new InvalidOperationException("Falha simulada na publicacao.");
             }
 
-            _mensagensPublicadas.Add(mensagemSaida);
+            _mensagensPublicadas.Add(outboxMessage);
         }
 
         return Task.CompletedTask;
     }
 
-    public IReadOnlyCollection<MensagemSaida> ListarMensagensPublicadas()
+    public IReadOnlyCollection<OutboxMessage> ListarMensagensPublicadas()
     {
         lock (_trava)
         {

@@ -14,14 +14,19 @@ namespace Lancamentos.Testes.Integracao.Infraestrutura;
 
 public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsyncDisposable
 {
-    private const string JwtIssuer = "fluxodecaixa-testes";
-    private const string JwtAudience = "fluxodecaixa-clientes-testes";
     private const string JwtChaveAssinatura = "chave-de-assinatura-dos-testes-com-32b";
-    private readonly SqliteConnection _connection = new("Data Source=:memory:");
+    private readonly string _connectionString = new SqliteConnectionStringBuilder
+    {
+        DataSource = $"file:lancamentos-tests-{Guid.NewGuid():N}",
+        Mode = SqliteOpenMode.Memory,
+        Cache = SqliteCacheMode.Shared
+    }.ToString();
+    private readonly SqliteConnection _keeperConnection;
     private readonly int _falhasRestantesPublicacao;
 
     public LancamentosApiFactory(int falhasRestantesPublicacao = 0)
     {
+        _keeperConnection = new SqliteConnection(_connectionString);
         _falhasRestantesPublicacao = falhasRestantesPublicacao;
     }
 
@@ -34,11 +39,9 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
         {
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.AtrasoInicialEmMilissegundos)}"] = "500",
-                [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.IntervaloEmMilissegundos)}"] = "50",
-                [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.QuantidadePorLote)}"] = "20",
-                [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.Issuer)}"] = JwtIssuer,
-                [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.Audience)}"] = JwtAudience,
+                [$"{OutboxMessagePublisherOptions.Secao}:{nameof(OutboxMessagePublisherOptions.AtrasoInicialEmMilissegundos)}"] = "500",
+                [$"{OutboxMessagePublisherOptions.Secao}:{nameof(OutboxMessagePublisherOptions.IntervaloEmMilissegundos)}"] = "50",
+                [$"{OutboxMessagePublisherOptions.Secao}:{nameof(OutboxMessagePublisherOptions.QuantidadePorLote)}"] = "20",
                 [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.ChaveAssinatura)}"] = JwtChaveAssinatura,
                 [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.ExpiracaoEmMinutos)}"] = "60"
             });
@@ -51,7 +54,7 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
             services.RemoveAll<IPublicadorMensagensIntegracao>();
 
             services.AddDbContext<LancamentosDbContext>(options =>
-                options.UseSqlite(_connection));
+                options.UseSqlite(_connectionString));
 
             PublicadorMensagens.DefinirFalhasRestantes(_falhasRestantesPublicacao);
             services.AddSingleton(PublicadorMensagens);
@@ -69,12 +72,10 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
 
     public string GerarToken(params string[] escopos)
     {
-        var emitidoEmUtc = new DateTimeOffset(new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc));
+        var emitidoEmUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
         var expiraEmUtc = emitidoEmUtc.AddHours(1);
 
         return JwtTokenTesteHelper.GerarToken(
-            JwtIssuer,
-            JwtAudience,
             JwtChaveAssinatura,
             escopos,
             emitidoEmUtc,
@@ -83,7 +84,7 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
 
     public async Task InicializarBancoAsync()
     {
-        await _connection.OpenAsync();
+        await _keeperConnection.OpenAsync();
 
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<LancamentosDbContext>();
@@ -103,6 +104,6 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
     public new async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
-        await _connection.DisposeAsync();
+        await _keeperConnection.DisposeAsync();
     }
 }

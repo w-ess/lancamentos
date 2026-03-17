@@ -52,7 +52,7 @@ namespace Lancamentos.Infraestrutura.Persistencia.Migrations
                     b.ToTable("lancamentos", (string)null);
                 });
 
-            modelBuilder.Entity("Lancamentos.Dominio.Entidades.MensagemSaida", b =>
+            modelBuilder.Entity("Lancamentos.Dominio.Entidades.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -95,9 +95,9 @@ namespace Lancamentos.Infraestrutura.Persistencia.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PublicadaEmUtc", "OcorridaEmUtc")
-                        .HasDatabaseName("ix_mensagens_saida_publicada_ocorrida");
+                        .HasDatabaseName("ix_outbox_messages_publicada_ocorrida");
 
-                    b.ToTable("mensagens_saida", (string)null);
+                    b.ToTable("outbox_messages", (string)null);
                 });
 #pragma warning restore 612, 618
         }

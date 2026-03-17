@@ -44,7 +44,7 @@ O que nao pertence a este contexto:
 - `ValorMonetario`: valor positivo com duas casas decimais.
 - `DataLancamento`: data civil a que o movimento pertence.
 - `SaldoDiario`: consolidado de uma data com total de creditos, total de debitos e saldo resultante.
-- `MensagemSaida`: registro local de evento de integracao pendente de publicacao.
+- `OutboxMessage`: registro local de evento de integracao pendente de publicacao.
 - `LancamentoProcessado`: registro usado pelo consolidado para evitar processamento duplicado por `LancamentoId`.
 - `LancamentoRegistradoV1`: evento publicado apos confirmacao transacional do lancamento.
 - `Defasado`: indicador de que a leitura do consolidado pode estar atrasada em relacao ao fluxo de eventos consumidos.
@@ -147,10 +147,10 @@ Observacoes:
 - `SaldoDiario`
 - `TipoLancamento`
 - `ValorMonetario`
-- `MensagemSaida`
+- `OutboxMessage`
 - `LancamentoProcessado`
 - `LancamentoRegistradoV1`
-- `PublicadorMensagensSaida`
+- `OutboxMessagePublisher`
 - `ProcessadorLancamentoRegistrado`
 
 ### Rotas HTTP
@@ -169,7 +169,7 @@ Observacoes:
 ### Tabelas principais
 
 - `lancamentos`
-- `mensagens_saida`
+- `outbox_messages`
 - `saldos_diarios`
 - `lancamentos_processados`
 
@@ -177,9 +177,9 @@ Observacoes:
 
 1. O cliente envia `POST /api/v1/lancamentos` com `Tipo`, `Valor` e `DataLancamento`.
 2. O servico de `Lancamentos` valida o comando, cria o agregado `Lancamento` e persiste o registro.
-3. Na mesma transacao, grava uma `MensagemSaida` contendo o evento `LancamentoRegistradoV1`.
+3. Na mesma transacao, grava uma `OutboxMessage` contendo o evento `LancamentoRegistradoV1`.
 4. A API responde com sucesso sem depender da disponibilidade do `ConsolidadoDiario`.
-5. Um `PublicadorMensagensSaida` em background le a tabela de saida e publica o evento em `lancamentos.eventos`.
+5. Um `OutboxMessagePublisher` em background le a tabela de saida e publica o evento em `lancamentos.eventos`.
 6. O `ProcessadorLancamentoRegistrado` consome a fila `consolidado-diario.lancamento-registrado.v1`.
 7. O servico de `ConsolidadoDiario` verifica idempotencia por `LancamentoId`, registra o `LancamentoProcessado`, aplica o movimento em `SaldoDiario` e atualiza `AtualizadoEmUtc`.
 8. O endpoint `GET /api/v1/saldos-diarios/{data}` retorna a leitura consolidada da data, inclusive quando nao houver movimento.

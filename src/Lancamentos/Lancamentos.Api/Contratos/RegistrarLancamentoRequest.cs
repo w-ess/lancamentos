@@ -1,19 +1,38 @@
 using System.ComponentModel.DataAnnotations;
-using Lancamentos.Aplicacao.CasosDeUso.RegistrarLancamento;
+using Lancamentos.Aplicacao.Services.RegistrarLancamento;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Lancamentos.Api.Contratos;
 
+/// <summary>
+/// Corpo da requisicao para registrar um novo lancamento.
+/// </summary>
 public sealed class RegistrarLancamentoRequest : IValidatableObject
 {
+    /// <summary>
+    /// Tipo do lancamento. Valores aceitos: Credito ou Debito.
+    /// </summary>
+    [Required]
+    [SwaggerSchema(Description = "Tipo do lancamento. Valores aceitos: Credito ou Debito.")]
     public string? Tipo { get; init; }
 
+    /// <summary>
+    /// Valor monetario do lancamento.
+    /// </summary>
+    [Required]
+    [SwaggerSchema(Description = "Valor do lancamento. Deve ser maior que zero e ter no maximo duas casas decimais.")]
     public decimal? Valor { get; init; }
 
+    /// <summary>
+    /// Data do lancamento no formato yyyy-MM-dd.
+    /// </summary>
+    [Required]
+    [SwaggerSchema(Description = "Data do lancamento no formato yyyy-MM-dd.", Format = "date")]
     public DateOnly? DataLancamento { get; init; }
 
-    public RegistrarLancamentoComando ParaComando(string correlacaoId)
+    public RegistrarLancamentoCommand ToCommand(string correlacaoId)
     {
-        return new RegistrarLancamentoComando(
+        return new RegistrarLancamentoCommand(
             Tipo!,
             Valor!.Value,
             DataLancamento!.Value,

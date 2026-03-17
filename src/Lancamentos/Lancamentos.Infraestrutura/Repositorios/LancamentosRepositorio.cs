@@ -28,14 +28,14 @@ public sealed class LancamentosRepositorio : ILancamentosRepositorio, IRegistroL
 
     public async Task RegistrarAsync(
         Lancamento lancamento,
-        MensagemSaida mensagemSaida,
+        OutboxMessage outboxMessage,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(lancamento);
-        ArgumentNullException.ThrowIfNull(mensagemSaida);
+        ArgumentNullException.ThrowIfNull(outboxMessage);
 
         await _dbContext.Lancamentos.AddAsync(lancamento, cancellationToken);
-        await _dbContext.MensagensSaida.AddAsync(mensagemSaida, cancellationToken);
+        await _dbContext.OutboxMessages.AddAsync(outboxMessage, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

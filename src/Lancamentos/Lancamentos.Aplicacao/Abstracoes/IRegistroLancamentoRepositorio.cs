@@ -6,6 +6,6 @@ public interface IRegistroLancamentoRepositorio
 {
     Task RegistrarAsync(
         Lancamento lancamento,
-        MensagemSaida mensagemSaida,
+        OutboxMessage outboxMessage,
         CancellationToken cancellationToken = default);
 }

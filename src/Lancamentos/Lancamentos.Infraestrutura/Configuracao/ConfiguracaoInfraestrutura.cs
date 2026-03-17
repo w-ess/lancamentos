@@ -2,7 +2,7 @@ using Lancamentos.Aplicacao.Abstracoes;
 using Lancamentos.Infraestrutura.Mensageria;
 using Lancamentos.Infraestrutura.Persistencia;
 using Lancamentos.Infraestrutura.Repositorios;
-using Lancamentos.Infraestrutura.Servicos;
+using Lancamentos.Infraestrutura.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,18 +33,18 @@ public static class ConfiguracaoInfraestrutura
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<PublicadorMensagensSaidaOpcoes>()
-            .Bind(configuration.GetSection(PublicadorMensagensSaidaOpcoes.Secao))
+        services.AddOptions<OutboxMessagePublisherOptions>()
+            .Bind(configuration.GetSection(OutboxMessagePublisherOptions.Secao))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
         services.AddScoped<LancamentosRepositorio>();
         services.AddScoped<ILancamentosRepositorio>(provider => provider.GetRequiredService<LancamentosRepositorio>());
         services.AddScoped<IRegistroLancamentoRepositorio>(provider => provider.GetRequiredService<LancamentosRepositorio>());
-        services.AddScoped<IMensagensSaidaRepositorio, MensagensSaidaRepositorio>();
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
         services.AddSingleton<IRelogioUtc, RelogioSistemaUtc>();
         services.AddSingleton<IPublicadorMensagensIntegracao, PublicadorRabbitMqMensagensIntegracao>();
-        services.AddHostedService<PublicadorMensagensSaida>();
+        services.AddHostedService<OutboxMessagePublisher>();
 
         return services;
     }

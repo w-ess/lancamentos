@@ -58,9 +58,7 @@ services:
       RabbitMq__Usuario: ${RABBITMQ_USUARIO:-fluxodecaixa}
       RabbitMq__Senha: ${RABBITMQ_SENHA:-fluxodecaixa}
       RabbitMq__VirtualHost: /
-      Autenticacao__Issuer: ${Autenticacao__Issuer:-fluxodecaixa-local}
-      Autenticacao__Audience: ${Autenticacao__Audience:-fluxodecaixa-clientes}
-      Autenticacao__ChaveAssinatura: ${Autenticacao__ChaveAssinatura:-uma-chave-local-com-pelo-menos-32-bytes}
+      Autenticacao__ChaveAssinatura: ${Autenticacao__ChaveAssinatura:-fluxodecaixa-chave-demo-fixa-2026}
       Autenticacao__ExpiracaoEmMinutos: ${Autenticacao__ExpiracaoEmMinutos:-60}
     depends_on:
       postgres:
@@ -89,9 +87,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__ConsolidadoDiarioDb: Host=postgres;Port=5432;Database=consolidado_db;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
-      Autenticacao__Issuer: ${Autenticacao__Issuer:-fluxodecaixa-local}
-      Autenticacao__Audience: ${Autenticacao__Audience:-fluxodecaixa-clientes}
-      Autenticacao__ChaveAssinatura: ${Autenticacao__ChaveAssinatura:-uma-chave-local-com-pelo-menos-32-bytes}
+      Autenticacao__ChaveAssinatura: ${Autenticacao__ChaveAssinatura:-fluxodecaixa-chave-demo-fixa-2026}
       Autenticacao__ExpiracaoEmMinutos: ${Autenticacao__ExpiracaoEmMinutos:-60}
     depends_on:
       postgres:

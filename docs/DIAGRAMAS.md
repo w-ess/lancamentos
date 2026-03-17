@@ -9,7 +9,7 @@ flowchart LR
     Cliente[Cliente HTTP]
     LancApi[Lancamentos API]
     LancDb[(PostgreSQL<br/>lancamentos_db)]
-    Outbox[(Tabela mensagens_saida)]
+    Outbox[(Tabela outbox_messages)]
     Rabbit[RabbitMQ]
     Proc[Processador Consolidado]
     ConsDb[(PostgreSQL<br/>consolidado_db)]
@@ -40,7 +40,7 @@ sequenceDiagram
 
     C->>L: POST /api/v1/lancamentos
     L->>LD: grava Lancamento
-    L->>LD: grava mensagens_saida
+    L->>LD: grava outbox_messages
     L-->>C: 201 Created
     L->>R: publica LancamentoRegistradoV1
     R->>P: entrega evento
@@ -62,7 +62,7 @@ sequenceDiagram
 
     C->>L: POST /api/v1/lancamentos
     L->>LD: grava Lancamento
-    L->>LD: grava mensagens_saida
+    L->>LD: grava outbox_messages
     L-->>C: 201 Created
     L->>R: tenta publicar/reenfileirar
     Note over P: API do consolidado ou processador pode estar parado

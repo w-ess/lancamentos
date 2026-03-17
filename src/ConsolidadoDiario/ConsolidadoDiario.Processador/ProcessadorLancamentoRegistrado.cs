@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using ConsolidadoDiario.Aplicacao.CasosDeUso.ProcessarLancamentoRegistrado;
+using ConsolidadoDiario.Aplicacao.Services.ProcessarLancamentoRegistrado;
 using ConsolidadoDiario.Aplicacao.Integracao;
 using ConsolidadoDiario.Processador.Mensageria;
 using Microsoft.Extensions.Options;
@@ -95,9 +95,9 @@ public sealed class ProcessadorLancamentoRegistrado :
             }
 
             using var scope = _serviceScopeFactory.CreateScope();
-            var casoDeUso = scope.ServiceProvider.GetRequiredService<ProcessarLancamentoRegistradoCasoDeUso>();
+            var service = scope.ServiceProvider.GetRequiredService<ProcessarLancamentoRegistradoService>();
 
-            var resultado = await casoDeUso.ExecutarAsync(evento, cancellationToken);
+            var resultado = await service.ExecutarAsync(evento, cancellationToken);
 
             if (resultado.JaProcessado)
             {

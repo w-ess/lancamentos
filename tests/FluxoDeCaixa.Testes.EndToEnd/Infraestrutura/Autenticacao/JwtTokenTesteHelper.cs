@@ -3,8 +3,6 @@ namespace FluxoDeCaixa.Testes.EndToEnd.Infraestrutura.Autenticacao;
 internal static class JwtTokenTesteHelper
 {
     public static string GerarToken(
-        string issuer,
-        string audience,
         string chaveAssinatura,
         IEnumerable<string> escopos,
         DateTimeOffset emitidoEmUtc,
@@ -22,8 +20,6 @@ internal static class JwtTokenTesteHelper
         };
 
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
             claims: claims,
             notBefore: emitidoEmUtc.UtcDateTime,
             expires: expiraEmUtc.UtcDateTime,

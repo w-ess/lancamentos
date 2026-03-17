@@ -1,16 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-issuer="${Autenticacao__Issuer:-fluxodecaixa-local}"
-audience="${Autenticacao__Audience:-fluxodecaixa-clientes}"
-chave="${Autenticacao__ChaveAssinatura:-}"
+chave="${Autenticacao__ChaveAssinatura:-fluxodecaixa-chave-demo-fixa-2026}"
 subject="${JWT_SUBJECT:-usuario-local}"
 expiracao_em_minutos="${Autenticacao__ExpiracaoEmMinutos:-60}"
-
-if [[ -z "$chave" ]]; then
-  echo "Defina a variavel de ambiente Autenticacao__ChaveAssinatura com pelo menos 32 bytes." >&2
-  exit 1
-fi
 
 tamanho_chave="$(printf '%s' "$chave" | wc -c | tr -d '[:space:]')"
 if (( tamanho_chave < 32 )); then
@@ -45,9 +38,7 @@ jti="$(cat /proc/sys/kernel/random/uuid)"
 
 header='{"alg":"HS256","typ":"JWT"}'
 payload="$(printf \
-  '{"iss":"%s","aud":"%s","sub":"%s","iat":%s,"nbf":%s,"exp":%s,"jti":"%s","scope":"%s"}' \
-  "$(json_escape "$issuer")" \
-  "$(json_escape "$audience")" \
+  '{"sub":"%s","iat":%s,"nbf":%s,"exp":%s,"jti":"%s","scope":"%s"}' \
   "$(json_escape "$subject")" \
   "$agora_epoch" \
   "$agora_epoch" \

@@ -21,6 +21,8 @@ internal sealed class AplicacaoFluxoCaixaAmbiente : IAsyncDisposable
         bool iniciarApiConsolidado,
         bool iniciarProcessador)
     {
+        await fixture.ResetarEstadoAsync();
+
         var diretorioRaiz = RepositorioRaizHelper.Obter();
         var portaLancamentos = PortaLivreHelper.ObterPortaLivreTcp();
         var portaConsolidado = iniciarApiConsolidado ? PortaLivreHelper.ObterPortaLivreTcp() : 0;
@@ -116,6 +118,19 @@ internal sealed class AplicacaoFluxoCaixaAmbiente : IAsyncDisposable
         _cts.Dispose();
     }
 
+    public string ObterDiagnostico()
+    {
+        if (_processos.Count == 0)
+        {
+            return "Nenhum processo hospedado foi iniciado.";
+        }
+
+        var diagnosticos = _processos
+            .Select((processo, indice) => $"Processo {indice + 1}:{Environment.NewLine}{processo.ObterDiagnostico()}");
+
+        return string.Join($"{Environment.NewLine}{Environment.NewLine}", diagnosticos);
+    }
+
     private Dictionary<string, string> CriarVariaveisBase(InfraestruturaEndToEndFixture fixture)
     {
         return new Dictionary<string, string>
@@ -129,12 +144,10 @@ internal sealed class AplicacaoFluxoCaixaAmbiente : IAsyncDisposable
             ["RabbitMq__Usuario"] = "guest",
             ["RabbitMq__Senha"] = "guest",
             ["RabbitMq__VirtualHost"] = "/",
-            ["PublicadorMensagensSaida__AtrasoInicialEmMilissegundos"] = "200",
-            ["PublicadorMensagensSaida__IntervaloEmMilissegundos"] = "200",
-            ["PublicadorMensagensSaida__QuantidadePorLote"] = "20",
+            ["OutboxMessagePublisher__AtrasoInicialEmMilissegundos"] = "200",
+            ["OutboxMessagePublisher__IntervaloEmMilissegundos"] = "200",
+            ["OutboxMessagePublisher__QuantidadePorLote"] = "20",
             ["ConsultaSaldoDiario__AtrasoMaximoToleradoEmMinutos"] = "5",
-            ["Autenticacao__Issuer"] = fixture.JwtIssuer,
-            ["Autenticacao__Audience"] = fixture.JwtAudience,
             ["Autenticacao__ChaveAssinatura"] = fixture.JwtChaveAssinatura,
             ["Autenticacao__ExpiracaoEmMinutos"] = "60",
             ["Logging__LogLevel__Default"] = "Information",

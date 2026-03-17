@@ -6,10 +6,10 @@ namespace Lancamentos.Testes.Unitarios.Doubles;
 internal sealed class LancamentosRepositorioEmMemoria :
     ILancamentosRepositorio,
     IRegistroLancamentoRepositorio,
-    IMensagensSaidaRepositorio
+    IOutboxMessageRepository
 {
     private readonly Dictionary<Guid, Lancamento> _itens = new();
-    private readonly Dictionary<Guid, MensagemSaida> _mensagens = new();
+    private readonly Dictionary<Guid, OutboxMessage> _mensagens = new();
 
     public Task AdicionarAsync(Lancamento lancamento, CancellationToken cancellationToken = default)
     {
@@ -19,11 +19,11 @@ internal sealed class LancamentosRepositorioEmMemoria :
 
     public Task RegistrarAsync(
         Lancamento lancamento,
-        MensagemSaida mensagemSaida,
+        OutboxMessage outboxMessage,
         CancellationToken cancellationToken = default)
     {
         _itens[lancamento.Id] = lancamento;
-        _mensagens[mensagemSaida.Id] = mensagemSaida;
+        _mensagens[outboxMessage.Id] = outboxMessage;
         return Task.CompletedTask;
     }
 
@@ -33,11 +33,11 @@ internal sealed class LancamentosRepositorioEmMemoria :
         return Task.FromResult(lancamento);
     }
 
-    public Task<IReadOnlyCollection<MensagemSaida>> ObterPendentesAsync(
+    public Task<IReadOnlyCollection<OutboxMessage>> ObterPendentesAsync(
         int quantidadeMaxima,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<MensagemSaida> mensagens = _mensagens.Values
+        IReadOnlyCollection<OutboxMessage> mensagens = _mensagens.Values
             .Where(mensagem => !mensagem.Publicada)
             .Take(quantidadeMaxima)
             .ToArray();
@@ -63,5 +63,5 @@ internal sealed class LancamentosRepositorioEmMemoria :
         return Task.CompletedTask;
     }
 
-    public IReadOnlyCollection<MensagemSaida> ListarMensagens() => _mensagens.Values.ToArray();
+    public IReadOnlyCollection<OutboxMessage> ListarMensagens() => _mensagens.Values.ToArray();
 }

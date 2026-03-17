@@ -4,5 +4,5 @@ namespace Lancamentos.Infraestrutura.Mensageria;
 
 public interface IPublicadorMensagensIntegracao
 {
-    Task PublicarAsync(MensagemSaida mensagemSaida, CancellationToken cancellationToken = default);
+    Task PublicarAsync(OutboxMessage outboxMessage, CancellationToken cancellationToken = default);
 }

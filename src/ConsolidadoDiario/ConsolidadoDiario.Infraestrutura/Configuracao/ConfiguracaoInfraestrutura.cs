@@ -1,7 +1,7 @@
 using ConsolidadoDiario.Aplicacao.Abstracoes;
 using ConsolidadoDiario.Infraestrutura.Persistencia;
 using ConsolidadoDiario.Infraestrutura.Repositorios;
-using ConsolidadoDiario.Infraestrutura.Servicos;
+using ConsolidadoDiario.Infraestrutura.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

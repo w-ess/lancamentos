@@ -106,7 +106,7 @@ public sealed class LancamentosEndpointsTests
     }
 
     [Fact]
-    public async Task DevePersistirEPublicarMensagemSaidaEmBackground()
+    public async Task DevePersistirEPublicarOutboxMessageEmBackground()
     {
         await using var factory = new LancamentosApiFactory();
         await factory.InicializarBancoAsync();
@@ -132,7 +132,7 @@ public sealed class LancamentosEndpointsTests
 
         var mensagemSaida = await AguardarAteAsync(
             async () => await factory.ExecutarNoDbContextAsync(async dbContext =>
-                await dbContext.MensagensSaida
+                await dbContext.OutboxMessages
                     .AsNoTracking()
                     .SingleOrDefaultAsync(item =>
                         item.CorrelacaoId == correlacaoId &&
@@ -186,7 +186,7 @@ public sealed class LancamentosEndpointsTests
 
         var mensagemSaida = await AguardarAteAsync(
             async () => await factory.ExecutarNoDbContextAsync(async dbContext =>
-                await dbContext.MensagensSaida
+                await dbContext.OutboxMessages
                     .AsNoTracking()
                     .SingleOrDefaultAsync(item =>
                         item.CorrelacaoId == correlacaoId &&

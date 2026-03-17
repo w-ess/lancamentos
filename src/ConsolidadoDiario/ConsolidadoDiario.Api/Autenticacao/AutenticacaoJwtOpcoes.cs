@@ -7,16 +7,11 @@ namespace ConsolidadoDiario.Api.Autenticacao;
 public sealed class AutenticacaoJwtOpcoes
 {
     public const string Secao = "Autenticacao";
-
-    [Required]
-    public string Issuer { get; init; } = "fluxodecaixa-local";
-
-    [Required]
-    public string Audience { get; init; } = "fluxodecaixa-clientes";
+    public const string ChaveAssinaturaPadrao = "fluxodecaixa-chave-demo-fixa-2026";
 
     [Required]
     [MinLength(32)]
-    public string ChaveAssinatura { get; init; } = string.Empty;
+    public string ChaveAssinatura { get; init; } = ChaveAssinaturaPadrao;
 
     [Range(1, 1440)]
     public int ExpiracaoEmMinutos { get; init; } = 60;

@@ -1,0 +1,307 @@
+{
+  "info": {
+    "_postman_id": "b8a95ca3-7d84-4d89-9be7-6d7607e9ef4f",
+    "name": "FluxoDeCaixa",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "lancamentos_base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "consolidado_base_url",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "jwt_secret",
+      "value": "fluxodecaixa-chave-demo-fixa-2026"
+    },
+    {
+      "key": "jwt_subject",
+      "value": "usuario-local"
+    },
+    {
+      "key": "jwt_expiration_minutes",
+      "value": "60"
+    },
+    {
+      "key": "jwt_scope",
+      "value": "lancamentos.escrita lancamentos.leitura consolidado.leitura"
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    },
+    {
+      "key": "saldo_data",
+      "value": "2026-03-17"
+    },
+    {
+      "key": "x_correlation_id",
+      "value": "postman-local-001"
+    },
+    {
+      "key": "lancamento_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Generate JWT",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function base64UrlEncodeWordArray(wordArray) {",
+                  "  return CryptoJS.enc.Base64.stringify(wordArray)",
+                  "    .replace(/\\+/g, '-')",
+                  "    .replace(/\\//g, '_')",
+                  "    .replace(/=+$/g, '');",
+                  "}",
+                  "",
+                  "function base64UrlEncodeUtf8(value) {",
+                  "  return base64UrlEncodeWordArray(CryptoJS.enc.Utf8.parse(value));",
+                  "}",
+                  "",
+                  "const secret = pm.collectionVariables.get('jwt_secret');",
+                  "const subject = pm.collectionVariables.get('jwt_subject') || 'usuario-local';",
+                  "const expirationMinutes = parseInt(pm.collectionVariables.get('jwt_expiration_minutes') || '60', 10);",
+                  "const scope = pm.collectionVariables.get('jwt_scope') || 'lancamentos.escrita lancamentos.leitura consolidado.leitura';",
+                  "const now = Math.floor(Date.now() / 1000);",
+                  "const exp = now + (expirationMinutes * 60);",
+                  "const guid = pm.variables.replaceIn('{{$guid}}');",
+                  "",
+                  "const header = { alg: 'HS256', typ: 'JWT' };",
+                  "const payload = {",
+                  "  sub: subject,",
+                  "  iat: now,",
+                  "  nbf: now,",
+                  "  exp: exp,",
+                  "  jti: guid,",
+                  "  scope: scope",
+                  "};",
+                  "",
+                  "const encodedHeader = base64UrlEncodeUtf8(JSON.stringify(header));",
+                  "const encodedPayload = base64UrlEncodeUtf8(JSON.stringify(payload));",
+                  "const signature = CryptoJS.HmacSHA256(`${encodedHeader}.${encodedPayload}`, secret);",
+                  "const encodedSignature = base64UrlEncodeWordArray(signature);",
+                  "const token = `${encodedHeader}.${encodedPayload}.${encodedSignature}`;",
+                  "",
+                  "pm.collectionVariables.set('jwt_token', token);",
+                  "pm.collectionVariables.set('jwt_generated_at', new Date().toISOString());",
+                  "console.log('JWT gerado com sucesso.');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Health respondeu 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('JWT gerado e salvo na collection', function () {",
+                  "  pm.expect(pm.collectionVariables.get('jwt_token')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{lancamentos_base_url}}/health",
+              "host": [
+                "{{lancamentos_base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Gera localmente um JWT HS256 e salva em {{jwt_token}}. A chamada ao /health serve apenas para facilitar o uso no Postman."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Lancamentos Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{lancamentos_base_url}}/health",
+              "host": [
+                "{{lancamentos_base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ConsolidadoDiario Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consolidado_base_url}}/health",
+              "host": [
+                "{{consolidado_base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lancamentos",
+      "item": [
+        {
+          "name": "Create Lancamento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Resposta 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('lancamento_id', data.Id);",
+                  "pm.test('Id salvo na collection', function () {",
+                  "  pm.expect(pm.collectionVariables.get('lancamento_id')).to.eql(data.Id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{x_correlation_id}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Tipo\": \"Credito\",\n  \"Valor\": 150.75,\n  \"DataLancamento\": \"{{saldo_data}}\"\n}"
+            },
+            "url": {
+              "raw": "{{lancamentos_base_url}}/api/v1/lancamentos",
+              "host": [
+                "{{lancamentos_base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lancamentos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lancamento By Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{lancamentos_base_url}}/api/v1/lancamentos/{{lancamento_id}}",
+              "host": [
+                "{{lancamentos_base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lancamentos",
+                "{{lancamento_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ConsolidadoDiario",
+      "item": [
+        {
+          "name": "Get Saldo Diario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consolidado_base_url}}/api/v1/saldos-diarios/{{saldo_data}}",
+              "host": [
+                "{{consolidado_base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "saldos-diarios",
+                "{{saldo_data}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

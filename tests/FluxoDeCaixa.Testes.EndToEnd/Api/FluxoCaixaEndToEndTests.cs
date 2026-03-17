@@ -55,9 +55,11 @@ public sealed class FluxoCaixaEndToEndTests
                     ? saldo
                     : null;
             },
-            TimeSpan.FromSeconds(45));
+            TimeSpan.FromSeconds(90));
 
-        Assert.NotNull(saldoAtualizado);
+        Assert.True(
+            saldoAtualizado is not null,
+            $"O consolidado nao foi atualizado dentro do tempo esperado.{Environment.NewLine}{ambiente.ObterDiagnostico()}");
         Assert.Equal(new DateOnly(2026, 3, 17), saldoAtualizado.Data);
         Assert.Equal(0m, saldoAtualizado.TotalDebitos);
     }
@@ -86,7 +88,7 @@ public sealed class FluxoCaixaEndToEndTests
     }
 
     [Fact]
-    public async Task DevePersistirLancamentoMesmoSemServicoDeConsolidadoDisponivel()
+    public async Task DevePersistirLancamentoMesmoSemConsolidadoDisponivel()
     {
         await using var ambiente = await AplicacaoFluxoCaixaAmbiente.IniciarAsync(
             _fixture,

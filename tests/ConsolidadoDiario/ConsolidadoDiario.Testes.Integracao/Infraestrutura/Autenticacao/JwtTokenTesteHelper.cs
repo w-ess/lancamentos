@@ -7,8 +7,6 @@ namespace ConsolidadoDiario.Testes.Integracao.Infraestrutura;
 internal static class JwtTokenTesteHelper
 {
     public static string GerarToken(
-        string issuer,
-        string audience,
         string chaveAssinatura,
         IReadOnlyCollection<string> escopos,
         DateTimeOffset emitidoEmUtc,
@@ -23,8 +21,6 @@ internal static class JwtTokenTesteHelper
 
         var payload = new Dictionary<string, object?>
         {
-            ["iss"] = issuer,
-            ["aud"] = audience,
             ["sub"] = subject,
             ["iat"] = emitidoEmUtc.ToUnixTimeSeconds(),
             ["nbf"] = emitidoEmUtc.ToUnixTimeSeconds(),

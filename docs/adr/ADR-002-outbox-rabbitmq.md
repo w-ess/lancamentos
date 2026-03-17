@@ -9,7 +9,7 @@ O consolidado depende dos dados de `Lancamentos`, mas a gravacao do lancamento n
 
 ## Decisao
 
-Persistir uma `MensagemSaida` na mesma transacao do `Lancamento` e publicar o evento `LancamentoRegistradoV1` em RabbitMQ por um publicador em background.
+Persistir uma `OutboxMessage` na mesma transacao do `Lancamento` e publicar o evento `LancamentoRegistradoV1` em RabbitMQ por um publicador em background.
 
 ## Consequencias
 

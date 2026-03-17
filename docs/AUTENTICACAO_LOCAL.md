@@ -2,21 +2,29 @@
 
 As APIs de `Lancamentos` e `ConsolidadoDiario` usam JWT bearer com assinatura simetrica HS256.
 
-## Variaveis de ambiente
+## Como gerar o token
 
-Defina as mesmas variaveis para as duas APIs:
+Use este comando:
 
 ```bash
-export Autenticacao__Issuer="fluxodecaixa-local"
-export Autenticacao__Audience="fluxodecaixa-clientes"
-export Autenticacao__ChaveAssinatura="uma-chave-local-com-pelo-menos-32-bytes"
-export Autenticacao__ExpiracaoEmMinutos="60"
+TOKEN="$(./scripts/gerar_token_jwt_local.sh)"
+```
+
+Esse e o fluxo padrao do projeto. Ele ja funciona sem configurar `issuer`, `audience` ou chave no ambiente.
+
+## Variaveis de ambiente
+
+Por padrao, as duas APIs usam a chave fixa de exemplo abaixo:
+
+```bash
+export Autenticacao__ChaveAssinatura="fluxodecaixa-chave-demo-fixa-2026"
 ```
 
 Observacoes:
 
-- `Autenticacao__ChaveAssinatura` e obrigatoria e precisa ter ao menos 32 bytes.
-- `Autenticacao__Issuer` e `Autenticacao__Audience` precisam bater com os valores usados na geracao do token.
+- se voce nao definir nada, o projeto ja sobe usando `fluxodecaixa-chave-demo-fixa-2026`.
+- `Autenticacao__ChaveAssinatura`, quando informada, precisa ter ao menos 32 bytes.
+- o token precisa apenas estar assinado com a mesma chave e dentro da validade.
 - `/` e `/health` permanecem anonimos; os endpoints de negocio exigem token.
 
 ## Permissoes exigidas
@@ -30,12 +38,6 @@ As permissoes sao emitidas na claim `scope`, separadas por espaco.
 ## Gerar token local
 
 O script `scripts/gerar_token_jwt_local.sh` gera um JWT compativel com a configuracao acima.
-
-Exemplo com todas as permissoes:
-
-```bash
-TOKEN="$(./scripts/gerar_token_jwt_local.sh)"
-```
 
 Exemplo com permissoes especificas:
 

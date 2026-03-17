@@ -12,7 +12,7 @@ public sealed class LancamentosDbContext : DbContext
 
     public DbSet<Lancamento> Lancamentos => Set<Lancamento>();
 
-    public DbSet<MensagemSaida> MensagensSaida => Set<MensagemSaida>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

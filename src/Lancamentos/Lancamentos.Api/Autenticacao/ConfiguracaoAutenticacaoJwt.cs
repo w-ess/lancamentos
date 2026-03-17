@@ -33,10 +33,8 @@ public static class ConfiguracaoAutenticacaoJwt
                 configuracaoJwt.MapInboundClaims = false;
                 configuracaoJwt.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = true,
-                    ValidIssuer = opcoes.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = opcoes.Audience,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = opcoes.CriarChaveSeguranca(),
                     ValidateLifetime = true,

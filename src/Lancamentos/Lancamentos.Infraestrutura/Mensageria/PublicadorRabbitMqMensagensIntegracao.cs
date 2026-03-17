@@ -28,25 +28,25 @@ public sealed class PublicadorRabbitMqMensagensIntegracao :
         _logger = logger;
     }
 
-    public async Task PublicarAsync(MensagemSaida mensagemSaida, CancellationToken cancellationToken = default)
+    public async Task PublicarAsync(OutboxMessage outboxMessage, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(mensagemSaida);
+        ArgumentNullException.ThrowIfNull(outboxMessage);
 
         try
         {
             var canal = await ObterCanalAsync(cancellationToken);
             var propriedades = new BasicProperties
             {
-                MessageId = mensagemSaida.Id.ToString(),
-                CorrelationId = mensagemSaida.CorrelacaoId,
-                Type = mensagemSaida.Tipo,
+                MessageId = outboxMessage.Id.ToString(),
+                CorrelationId = outboxMessage.CorrelacaoId,
+                Type = outboxMessage.Tipo,
                 ContentType = "application/json",
                 DeliveryMode = DeliveryModes.Persistent,
-                Timestamp = new AmqpTimestamp(new DateTimeOffset(mensagemSaida.OcorridaEmUtc).ToUnixTimeSeconds())
+                Timestamp = new AmqpTimestamp(new DateTimeOffset(outboxMessage.OcorridaEmUtc).ToUnixTimeSeconds())
             };
 
-            var corpo = Encoding.UTF8.GetBytes(mensagemSaida.Conteudo);
-            var routingKey = TopologiaRabbitMq.ObterRoutingKey(mensagemSaida.Tipo);
+            var corpo = Encoding.UTF8.GetBytes(outboxMessage.Conteudo);
+            var routingKey = TopologiaRabbitMq.ObterRoutingKey(outboxMessage.Tipo);
 
             await canal.BasicPublishAsync(
                 exchange: TopologiaRabbitMq.ExchangeEventos,
