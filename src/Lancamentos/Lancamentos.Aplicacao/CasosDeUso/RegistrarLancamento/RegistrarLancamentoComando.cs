@@ -3,4 +3,5 @@ namespace Lancamentos.Aplicacao.CasosDeUso.RegistrarLancamento;
 public sealed record RegistrarLancamentoComando(
     string Tipo,
     decimal Valor,
-    DateOnly DataLancamento);
+    DateOnly DataLancamento,
+    string CorrelacaoId);

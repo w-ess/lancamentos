@@ -1,16 +1,18 @@
 using Lancamentos.Aplicacao.Abstracoes;
+using Lancamentos.Aplicacao.Integracao;
 using Lancamentos.Dominio.Entidades;
 using Lancamentos.Dominio.ObjetosDeValor;
+using System.Text.Json;
 
 namespace Lancamentos.Aplicacao.CasosDeUso.RegistrarLancamento;
 
 public sealed class RegistrarLancamentoCasoDeUso
 {
-    private readonly ILancamentosRepositorio _repositorio;
+    private readonly IRegistroLancamentoRepositorio _repositorio;
     private readonly IRelogioUtc _relogioUtc;
 
     public RegistrarLancamentoCasoDeUso(
-        ILancamentosRepositorio repositorio,
+        IRegistroLancamentoRepositorio repositorio,
         IRelogioUtc relogioUtc)
     {
         ArgumentNullException.ThrowIfNull(repositorio);
@@ -32,7 +34,16 @@ public sealed class RegistrarLancamentoCasoDeUso
             DataLancamento.Criar(comando.DataLancamento),
             _relogioUtc.UtcNow);
 
-        await _repositorio.AdicionarAsync(lancamento, cancellationToken);
+        var eventoId = Guid.NewGuid();
+        var evento = LancamentoRegistradoV1.Criar(lancamento, eventoId, comando.CorrelacaoId);
+        var mensagemSaida = MensagemSaida.Criar(
+            evento.EventoId,
+            nameof(LancamentoRegistradoV1),
+            JsonSerializer.Serialize(evento),
+            comando.CorrelacaoId,
+            evento.OcorridoEmUtc);
+
+        await _repositorio.RegistrarAsync(lancamento, mensagemSaida, cancellationToken);
 
         return LancamentoDto.DeEntidade(lancamento);
     }

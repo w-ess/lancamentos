@@ -1,4 +1,9 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Lancamentos.Aplicacao.Integracao;
+using Lancamentos.Infraestrutura.Persistencia;
 using Lancamentos.Testes.Integracao.Infraestrutura;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lancamentos.Testes.Integracao.Api;
@@ -98,6 +103,122 @@ public sealed class LancamentosEndpointsTests
         Assert.NotNull(problemDetails);
         Assert.Equal("Requisicao invalida.", problemDetails.Title);
         Assert.Equal("O corpo da requisicao esta mal formatado.", problemDetails.Detail);
+    }
+
+    [Fact]
+    public async Task DevePersistirEPublicarMensagemSaidaEmBackground()
+    {
+        await using var factory = new LancamentosApiFactory();
+        await factory.InicializarBancoAsync();
+        using var client = factory.CreateClient();
+
+        const string correlacaoId = "corr-integracao-publicacao";
+        var requisicao = new
+        {
+            Tipo = "Debito",
+            Valor = 50.25m,
+            DataLancamento = new DateOnly(2026, 3, 17)
+        };
+
+        using var mensagem = new HttpRequestMessage(HttpMethod.Post, "/api/v1/lancamentos")
+        {
+            Content = JsonContent.Create(requisicao)
+        };
+        mensagem.Headers.Add("X-Correlation-Id", correlacaoId);
+
+        var resposta = await client.SendAsync(mensagem);
+
+        Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
+
+        var mensagemSaida = await AguardarAteAsync(
+            async () => await factory.ExecutarNoDbContextAsync(async dbContext =>
+                await dbContext.MensagensSaida
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(item =>
+                        item.CorrelacaoId == correlacaoId &&
+                        item.PublicadaEmUtc != null)),
+            TimeSpan.FromSeconds(5));
+
+        Assert.NotNull(mensagemSaida);
+        Assert.NotNull(mensagemSaida.PublicadaEmUtc);
+        Assert.Equal(0, mensagemSaida.TentativasPublicacao);
+        Assert.Null(mensagemSaida.UltimoErro);
+
+        var evento = JsonSerializer.Deserialize<LancamentoRegistradoV1>(mensagemSaida.Conteudo);
+
+        Assert.NotNull(evento);
+        Assert.Equal(correlacaoId, evento.CorrelacaoId);
+        Assert.Equal(mensagemSaida.Id, evento.EventoId);
+        Assert.Equal("Debito", evento.Tipo);
+        Assert.Single(factory.PublicadorMensagens.ListarMensagensPublicadas());
+    }
+
+    [Fact]
+    public async Task DevePersistirLancamentoMesmoQuandoPublicacaoFalhar()
+    {
+        await using var factory = new LancamentosApiFactory(falhasRestantesPublicacao: int.MaxValue);
+        await factory.InicializarBancoAsync();
+        using var client = factory.CreateClient();
+
+        const string correlacaoId = "corr-integracao-falha";
+        var requisicao = new
+        {
+            Tipo = "Credito",
+            Valor = 10.00m,
+            DataLancamento = new DateOnly(2026, 3, 17)
+        };
+
+        using var mensagem = new HttpRequestMessage(HttpMethod.Post, "/api/v1/lancamentos")
+        {
+            Content = JsonContent.Create(requisicao)
+        };
+        mensagem.Headers.Add("X-Correlation-Id", correlacaoId);
+
+        var respostaPost = await client.SendAsync(mensagem);
+        var lancamentoCriado = await respostaPost.Content.ReadFromJsonAsync<LancamentoResponse>();
+
+        Assert.Equal(HttpStatusCode.Created, respostaPost.StatusCode);
+        Assert.NotNull(lancamentoCriado);
+
+        var respostaGet = await client.GetAsync($"/api/v1/lancamentos/{lancamentoCriado.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, respostaGet.StatusCode);
+
+        var mensagemSaida = await AguardarAteAsync(
+            async () => await factory.ExecutarNoDbContextAsync(async dbContext =>
+                await dbContext.MensagensSaida
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(item =>
+                        item.CorrelacaoId == correlacaoId &&
+                        item.TentativasPublicacao > 0)),
+            TimeSpan.FromSeconds(5));
+
+        Assert.NotNull(mensagemSaida);
+        Assert.Null(mensagemSaida.PublicadaEmUtc);
+        Assert.NotNull(mensagemSaida.UltimoErro);
+        Assert.Empty(factory.PublicadorMensagens.ListarMensagensPublicadas());
+    }
+
+    private static async Task<T?> AguardarAteAsync<T>(
+        Func<Task<T?>> obterValorAsync,
+        TimeSpan timeout)
+        where T : class
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        while (stopwatch.Elapsed < timeout)
+        {
+            var valor = await obterValorAsync();
+
+            if (valor is not null)
+            {
+                return valor;
+            }
+
+            await Task.Delay(100);
+        }
+
+        return null;
     }
 
     private sealed record LancamentoResponse(

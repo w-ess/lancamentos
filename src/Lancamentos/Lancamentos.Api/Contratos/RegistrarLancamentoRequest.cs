@@ -11,12 +11,13 @@ public sealed class RegistrarLancamentoRequest : IValidatableObject
 
     public DateOnly? DataLancamento { get; init; }
 
-    public RegistrarLancamentoComando ParaComando()
+    public RegistrarLancamentoComando ParaComando(string correlacaoId)
     {
         return new RegistrarLancamentoComando(
             Tipo!,
             Valor!.Value,
-            DataLancamento!.Value);
+            DataLancamento!.Value,
+            correlacaoId);
     }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lancamentos.Infraestrutura.Repositorios;
 
-public sealed class LancamentosRepositorio : ILancamentosRepositorio
+public sealed class LancamentosRepositorio : ILancamentosRepositorio, IRegistroLancamentoRepositorio
 {
     private readonly LancamentosDbContext _dbContext;
 
@@ -23,6 +23,19 @@ public sealed class LancamentosRepositorio : ILancamentosRepositorio
         ArgumentNullException.ThrowIfNull(lancamento);
 
         await _dbContext.Lancamentos.AddAsync(lancamento, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task RegistrarAsync(
+        Lancamento lancamento,
+        MensagemSaida mensagemSaida,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(lancamento);
+        ArgumentNullException.ThrowIfNull(mensagemSaida);
+
+        await _dbContext.Lancamentos.AddAsync(lancamento, cancellationToken);
+        await _dbContext.MensagensSaida.AddAsync(mensagemSaida, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

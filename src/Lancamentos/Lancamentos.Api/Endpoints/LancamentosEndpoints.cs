@@ -22,6 +22,7 @@ public static class LancamentosEndpoints
 
     private static async Task<Results<Created<LancamentoDto>, ValidationProblem>> RegistrarAsync(
         RegistrarLancamentoRequest? request,
+        HttpContext httpContext,
         RegistrarLancamentoCasoDeUso casoDeUso,
         CancellationToken cancellationToken)
     {
@@ -40,7 +41,8 @@ public static class LancamentosEndpoints
             return TypedResults.ValidationProblem(erros);
         }
 
-        var lancamento = await casoDeUso.ExecutarAsync(request.ParaComando(), cancellationToken);
+        var correlacaoId = ObterCorrelacaoId(httpContext);
+        var lancamento = await casoDeUso.ExecutarAsync(request.ParaComando(correlacaoId), cancellationToken);
 
         return TypedResults.Created($"/api/v1/lancamentos/{lancamento.Id}", lancamento);
     }
@@ -81,5 +83,18 @@ public static class LancamentosEndpoints
             .ToDictionary(
                 grupo => grupo.Key,
                 grupo => grupo.Select(item => item.Mensagem).Distinct().ToArray());
+    }
+
+    private static string ObterCorrelacaoId(HttpContext httpContext)
+    {
+        const string nomeCabecalho = "X-Correlation-Id";
+
+        if (httpContext.Request.Headers.TryGetValue(nomeCabecalho, out var valores) &&
+            !string.IsNullOrWhiteSpace(valores.ToString()))
+        {
+            return valores.ToString().Trim();
+        }
+
+        return httpContext.TraceIdentifier;
     }
 }
