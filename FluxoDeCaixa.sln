@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsolidadoDiario.Testes.Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsolidadoDiario.Testes.Integracao", "tests\ConsolidadoDiario\ConsolidadoDiario.Testes.Integracao\ConsolidadoDiario.Testes.Integracao.csproj", "{7DC63450-71EE-421A-A05F-C6990511F5FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxoDeCaixa.Testes.EndToEnd", "tests\FluxoDeCaixa.Testes.EndToEnd\FluxoDeCaixa.Testes.EndToEnd.csproj", "{9AAFF88D-98A6-40BF-8502-55C4DCFDCD3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,10 @@ Global
 		{7DC63450-71EE-421A-A05F-C6990511F5FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DC63450-71EE-421A-A05F-C6990511F5FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DC63450-71EE-421A-A05F-C6990511F5FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AAFF88D-98A6-40BF-8502-55C4DCFDCD3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AAFF88D-98A6-40BF-8502-55C4DCFDCD3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AAFF88D-98A6-40BF-8502-55C4DCFDCD3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AAFF88D-98A6-40BF-8502-55C4DCFDCD3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E055EC10-81E9-4098-88A9-943BE5B3B1AA} = {161C4209-C4A8-417A-96A8-559958FDC92E}
@@ -121,5 +127,6 @@ Global
 		{EF57F041-3E56-4762-996D-689BB28BC572} = {15D26F5C-B024-43AA-85A0-3C9DBE8FA60D}
 		{6C5F8501-DB4F-4174-B2ED-D3855C34F230} = {EF57F041-3E56-4762-996D-689BB28BC572}
 		{7DC63450-71EE-421A-A05F-C6990511F5FB} = {EF57F041-3E56-4762-996D-689BB28BC572}
+		{9AAFF88D-98A6-40BF-8502-55C4DCFDCD3C} = {15D26F5C-B024-43AA-85A0-3C9DBE8FA60D}
 	EndGlobalSection
 EndGlobal

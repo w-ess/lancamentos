@@ -6,9 +6,9 @@ Toda vez que uma tarefa for concluida, este arquivo deve ser atualizado para que
 
 ## Resumo atual
 
-- Estado geral: T01, T02, T03, T04, T05, T06, T07, T08 e T09 concluidas; aguardando inicio da T10
-- Ultima tarefa concluida: T09 - Subir toda a infraestrutura com Docker Compose
-- Proxima tarefa: T10 - Implementar testes de integracao ponta a ponta
+- Estado geral: T01, T02, T03, T04, T05, T06, T07, T08, T09 e T10 concluidas; aguardando inicio da T11
+- Ultima tarefa concluida: T10 - Implementar testes de integracao ponta a ponta
+- Proxima tarefa: T11 - Documentar e fechar a entrega
 - Ultima atualizacao: 2026-03-17
 - Bloqueios conhecidos: nenhum
 
@@ -147,3 +147,15 @@ Copiar o modelo abaixo ao concluir cada tarefa:
 - Decisoes tomadas: usar um unico container PostgreSQL com script de inicializacao para criar os dois bancos do projeto; manter um unico `Dockerfile` parametrizado por projeto e DLL para evitar duplicacao; aplicar migrations automaticamente no startup das APIs e deixar o processador dependente da API de consolidado saudavel para evitar corrida de migracoes no mesmo banco; habilitar `EnableRetryOnFailure` no Npgsql para melhorar resiliencia de startup; expor portas altas por padrao (`55432`, `55672` e `55673`) para reduzir conflito com instancias locais ja em execucao na maquina hospedeira.
 - Pendencias: nenhuma dentro do escopo da T09; permanecem apenas os avisos esperados de Data Protection em containers efemeros das APIs, sem impacto no fluxo autenticado com JWT HS256 configurado por ambiente.
 - Proxima tarefa recomendada: T10 - Implementar testes de integracao ponta a ponta.
+
+## T10 - Implementar testes de integracao ponta a ponta
+
+- Status: concluida
+- Data: 2026-03-17
+- Objetivo da tarefa: validar os fluxos principais do sistema de forma automatizada com infraestrutura real, cobrindo o fluxo de criacao de lancamento ate o consolidado, autenticacao/autorizacao e a continuidade do transacional quando o consolidado nao estiver disponivel.
+- O que foi feito: criado o projeto `tests/FluxoDeCaixa.Testes.EndToEnd` com `Testcontainers` para PostgreSQL e RabbitMQ; implementada fixture compartilhada para subir a infraestrutura efemera, criar os bancos `lancamentos_db` e `consolidado_db`, gerar JWTs reais e iniciar os processos `Lancamentos.Api`, `ConsolidadoDiario.Api` e `ConsolidadoDiario.Processador` em modo `Release`; adicionados cenarios ponta a ponta cobrindo o fluxo completo de `POST /api/v1/lancamentos` ate `GET /api/v1/saldos-diarios/{data}`, a protecao por `401` e `403`, e a gravacao/consulta do servico transacional sem iniciar os componentes do consolidado; integrada a nova suite a `FluxoDeCaixa.sln`.
+- Arquivos criados ou alterados: `FluxoDeCaixa.sln`; `tests/FluxoDeCaixa.Testes.EndToEnd/FluxoDeCaixa.Testes.EndToEnd.csproj`; `tests/FluxoDeCaixa.Testes.EndToEnd/GlobalUsings.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Api/FluxoCaixaEndToEndTests.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/AplicacaoFluxoCaixaAmbiente.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/InfraestruturaEndToEndCollection.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/InfraestruturaEndToEndFixture.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/PortaLivreHelper.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/ProcessoHospedado.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/RepositorioRaizHelper.cs`; `tests/FluxoDeCaixa.Testes.EndToEnd/Infraestrutura/Autenticacao/JwtTokenTesteHelper.cs`; `docs/REGISTRO_DE_EXECUCAO.md`.
+- Testes executados: `dotnet build FluxoDeCaixa.sln -c Release`; `dotnet test tests/FluxoDeCaixa.Testes.EndToEnd/FluxoDeCaixa.Testes.EndToEnd.csproj -c Release --no-build --logger 'console;verbosity=minimal'` com 3 testes aprovados; `dotnet test FluxoDeCaixa.sln -c Release --logger 'console;verbosity=minimal'` com 65 testes aprovados no total, sendo 24 em `Lancamentos.Testes.Unitarios`, 22 em `ConsolidadoDiario.Testes.Unitarios`, 8 em `Lancamentos.Testes.Integracao`, 8 em `ConsolidadoDiario.Testes.Integracao` e 3 em `FluxoDeCaixa.Testes.EndToEnd`.
+- Decisoes tomadas: usar `Testcontainers` apenas para as dependencias externas mutaveis (`PostgreSQL` e `RabbitMQ`) e subir as aplicacoes reais como processos `dotnet run -c Release --no-build` para reduzir o tempo de ciclo e evitar o custo de build de imagens dentro dos testes; manter a suite E2E serializada por collection para evitar disputa por portas e processos; considerar a indisponibilidade do consolidado como ausencia da API e do processador, preservando a publicacao assincrona no RabbitMQ sem bloquear a API transacional.
+- Pendencias: nenhuma dentro do escopo da T10.
+- Proxima tarefa recomendada: T11 - Documentar e fechar a entrega.
