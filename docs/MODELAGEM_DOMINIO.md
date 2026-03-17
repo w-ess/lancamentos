@@ -45,7 +45,7 @@ O que nao pertence a este contexto:
 - `DataLancamento`: data civil a que o movimento pertence.
 - `SaldoDiario`: consolidado de uma data com total de creditos, total de debitos e saldo resultante.
 - `MensagemSaida`: registro local de evento de integracao pendente de publicacao.
-- `EventoProcessado`: registro usado pelo consolidado para evitar processamento duplicado.
+- `LancamentoProcessado`: registro usado pelo consolidado para evitar processamento duplicado por `LancamentoId`.
 - `LancamentoRegistradoV1`: evento publicado apos confirmacao transacional do lancamento.
 - `Defasado`: indicador de que a leitura do consolidado pode estar atrasada em relacao ao fluxo de eventos consumidos.
 
@@ -92,7 +92,7 @@ Regras:
 - para evento de `Debito`, somar em `TotalDebitos` e recalcular `Saldo`.
 - `Saldo` e sempre `TotalCreditos - TotalDebitos`.
 - a chave natural do agregado e a propria `Data`.
-- o processamento deve ser idempotente por `EventoId`.
+- o processamento deve ser idempotente por `LancamentoId`.
 
 ## Contratos principais
 
@@ -135,6 +135,10 @@ Campos:
 - `DataLancamento: date`
 - `CorrelacaoId: string`
 
+Observacoes:
+- `EventoId` identifica tecnicamente a mensagem publicada e pode ser usado para rastreabilidade, deduplicacao de entrega e diagnostico.
+- `LancamentoId` identifica o fato de negocio e deve ser usado como chave de idempotencia no `ConsolidadoDiario`.
+
 ## Nomes centrais fixados
 
 ### Classes e tipos
@@ -144,7 +148,7 @@ Campos:
 - `TipoLancamento`
 - `ValorMonetario`
 - `MensagemSaida`
-- `EventoProcessado`
+- `LancamentoProcessado`
 - `LancamentoRegistradoV1`
 - `PublicadorMensagensSaida`
 - `ProcessadorLancamentoRegistrado`
@@ -167,7 +171,7 @@ Campos:
 - `lancamentos`
 - `mensagens_saida`
 - `saldos_diarios`
-- `eventos_processados`
+- `lancamentos_processados`
 
 ## Fluxo principal
 
@@ -177,7 +181,7 @@ Campos:
 4. A API responde com sucesso sem depender da disponibilidade do `ConsolidadoDiario`.
 5. Um `PublicadorMensagensSaida` em background le a tabela de saida e publica o evento em `lancamentos.eventos`.
 6. O `ProcessadorLancamentoRegistrado` consome a fila `consolidado-diario.lancamento-registrado.v1`.
-7. O servico de `ConsolidadoDiario` verifica idempotencia por `EventoId`, aplica o movimento em `SaldoDiario` e atualiza `AtualizadoEmUtc`.
+7. O servico de `ConsolidadoDiario` verifica idempotencia por `LancamentoId`, registra o `LancamentoProcessado`, aplica o movimento em `SaldoDiario` e atualiza `AtualizadoEmUtc`.
 8. O endpoint `GET /api/v1/saldos-diarios/{data}` retorna a leitura consolidada da data, inclusive quando nao houver movimento.
 
 ## Decisoes de modelagem
@@ -186,4 +190,5 @@ Campos:
 - O contrato de integracao carrega apenas os dados necessarios para consolidacao; o consolidado nao consulta o banco do servico transacional.
 - O agregado `Lancamento` nao depende de conta, categoria ou centro de custo neste escopo inicial.
 - O modelo prioriza imutabilidade do lancamento para simplificar auditoria e reprocessamento.
+- A idempotencia de negocio do consolidado sera garantida por `LancamentoId`; `EventoId` permanece apenas como identidade tecnica da mensagem.
 - O indicador `Defasado` sera calculado no servico de leitura a partir do atraso observado no processamento de eventos.

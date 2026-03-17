@@ -6,9 +6,9 @@ Toda vez que uma tarefa for concluida, este arquivo deve ser atualizado para que
 
 ## Resumo atual
 
-- Estado geral: T01, T02 e T03 concluidas; aguardando inicio da T04
-- Ultima tarefa concluida: T03 - Implementar o dominio de Lancamentos
-- Proxima tarefa: T04 - Implementar persistencia e API de Lancamentos
+- Estado geral: T01, T02, T03 e T04 concluidas; aguardando inicio da T05
+- Ultima tarefa concluida: T04 - Implementar persistencia e API de Lancamentos
+- Proxima tarefa: T05 - Implementar tabela de saida e publicacao de eventos
 - Ultima atualizacao: 2026-03-17
 - Bloqueios conhecidos: nenhum
 
@@ -48,7 +48,7 @@ Copiar o modelo abaixo ao concluir cada tarefa:
 - O que foi feito: criado o documento `docs/MODELAGEM_DOMINIO.md` com delimitacao dos contextos, agregados `Lancamento` e `SaldoDiario`, invariantes de dominio, contratos `Lancamento`, `SaldoDiario` e `LancamentoRegistradoV1`, nomes fixados para rotas, filas, exchange, routing key e tabelas, alem do fluxo principal entre gravacao transacional, tabela de saida, publicacao e consolidacao.
 - Arquivos criados ou alterados: `docs/MODELAGEM_DOMINIO.md`; `docs/REGISTRO_DE_EXECUCAO.md`.
 - Testes executados: nenhum teste automatizado; tarefa documental revisada por leitura local.
-- Decisoes tomadas: manter nomes em portugues; adotar consistencia eventual com tabela de saida; tratar `Lancamento` como agregado imutavel apos persistencia; usar `EventoId` para idempotencia no consolidado; definir `Defasado` como indicador calculado pelo servico de leitura a partir do atraso no processamento.
+- Decisoes tomadas: manter nomes em portugues; adotar consistencia eventual com tabela de saida; tratar `Lancamento` como agregado imutavel apos persistencia; usar `LancamentoId` como chave de idempotencia de negocio no consolidado e manter `EventoId` apenas como identidade tecnica da mensagem; definir `Defasado` como indicador calculado pelo servico de leitura a partir do atraso no processamento.
 - Pendencias: nenhuma dentro do escopo da T01.
 - Proxima tarefa recomendada: T02 - Criar a base da solution.
 
@@ -75,3 +75,15 @@ Copiar o modelo abaixo ao concluir cada tarefa:
 - Decisoes tomadas: manter `TipoLancamento` como objeto de valor com valores canonicos `Credito` e `Debito`; rejeitar `RegistradoEmUtc` fora de UTC para preservar rastreabilidade consistente; aceitar valores monetarios positivos com ate duas casas decimais; fazer a consulta por id retornar `null` quando o lancamento nao existir; manter repositorio e relogio como abstracoes da camada de aplicacao para a infraestrutura implementar na T04.
 - Pendencias: nenhuma dentro do escopo da T03; ainda falta conectar persistencia real e expor os casos de uso via HTTP, o que fica para a T04.
 - Proxima tarefa recomendada: T04 - Implementar persistencia e API de Lancamentos.
+
+## T04 - Implementar persistencia e API de Lancamentos
+
+- Status: concluida
+- Data: 2026-03-17
+- Objetivo da tarefa: expor o servico transacional por HTTP, persistir os dados no PostgreSQL com EF Core e deixar migrations iniciais prontas para aplicacao.
+- O que foi feito: implementado o `LancamentosDbContext` com mapeamento da tabela `lancamentos`; criado o repositorio EF Core e a injecao de dependencias da infraestrutura; adicionados o relogio de sistema UTC e a fabrica de contexto em tempo de design para suportar migrations; conectada a API aos casos de uso com os endpoints `POST /api/v1/lancamentos` e `GET /api/v1/lancamentos/{id}`; adicionados validacao de entrada e tratamento padrao de erro com `ProblemDetails`, inclusive para falhas de bind de JSON; configurada a connection string padrao local em `appsettings.json`; gerada a migration inicial `InicialLancamentos`; substituido o teste de integracao placeholder por testes HTTP reais cobrindo criacao, consulta, `400` e `404`, usando SQLite em memoria para exercitar a persistencia sem depender de PostgreSQL no pipeline local.
+- Arquivos criados ou alterados: `src/Lancamentos/Lancamentos.Api/Lancamentos.Api.csproj`; `src/Lancamentos/Lancamentos.Api/Program.cs`; `src/Lancamentos/Lancamentos.Api/appsettings.json`; `src/Lancamentos/Lancamentos.Api/Contratos/RegistrarLancamentoRequest.cs`; `src/Lancamentos/Lancamentos.Api/Endpoints/LancamentosEndpoints.cs`; `src/Lancamentos/Lancamentos.Api/Erros/ManipuladorExcecoesHttp.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Lancamentos.Infraestrutura.csproj`; `src/Lancamentos/Lancamentos.Infraestrutura/Configuracao/ConfiguracaoInfraestrutura.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/LancamentosDbContext.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/FabricaLancamentosDbContextTempoDeDesign.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/Mapeamentos/LancamentoMapeamento.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/Migrations/20260317143853_InicialLancamentos.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/Migrations/20260317143853_InicialLancamentos.Designer.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Persistencia/Migrations/LancamentosDbContextModelSnapshot.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Repositorios/LancamentosRepositorio.cs`; `src/Lancamentos/Lancamentos.Infraestrutura/Servicos/RelogioSistemaUtc.cs`; `tests/Lancamentos/Lancamentos.Testes.Integracao/Lancamentos.Testes.Integracao.csproj`; `tests/Lancamentos/Lancamentos.Testes.Integracao/GlobalUsings.cs`; `tests/Lancamentos/Lancamentos.Testes.Integracao/Api/LancamentosEndpointsTests.cs`; `tests/Lancamentos/Lancamentos.Testes.Integracao/Infraestrutura/LancamentosApiFactory.cs`; `tests/Lancamentos/Lancamentos.Testes.Integracao/EstruturaInicialTests.cs` removido; `docs/REGISTRO_DE_EXECUCAO.md`.
+- Testes executados: `dotnet build FluxoDeCaixa.sln -c Release`; `/tmp/dotnet-tools/dotnet-ef migrations add InicialLancamentos --project src/Lancamentos/Lancamentos.Infraestrutura/Lancamentos.Infraestrutura.csproj --startup-project src/Lancamentos/Lancamentos.Api/Lancamentos.Api.csproj --output-dir Persistencia/Migrations`; `dotnet test FluxoDeCaixa.sln -c Release --no-build --logger 'console;verbosity=minimal'` com 27 testes aprovados no total, sendo 21 unitarios de `Lancamentos`, 4 integrados de `Lancamentos` e 2 testes ja existentes de `ConsolidadoDiario`.
+- Decisoes tomadas: manter as migrations do servico em `Lancamentos.Infraestrutura`; usar PostgreSQL como provider de runtime e SQLite em memoria apenas nos testes de integracao para exercitar endpoints e persistencia com isolamento local; preservar os nomes de contrato definidos no plano e padronizar erros HTTP em `ProblemDetails` para dominio, validacao e JSON invalido; deixar a connection string pronta para override por variavel de ambiente nas proximas tarefas.
+- Pendencias: nenhuma dentro do escopo da T04; a tabela de saida, a mensagem `LancamentoRegistradoV1` e a publicacao em RabbitMQ continuam para a T05.
+- Proxima tarefa recomendada: T05 - Implementar tabela de saida e publicacao de eventos.
