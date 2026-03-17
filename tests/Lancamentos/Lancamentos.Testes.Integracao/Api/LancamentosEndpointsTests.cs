@@ -15,7 +15,7 @@ public sealed class LancamentosEndpointsTests
     {
         await using var factory = new LancamentosApiFactory();
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("lancamentos.escrita", "lancamentos.leitura");
 
         var requisicao = new
         {
@@ -56,7 +56,7 @@ public sealed class LancamentosEndpointsTests
     {
         await using var factory = new LancamentosApiFactory();
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("lancamentos.leitura");
 
         var resposta = await client.GetAsync($"/api/v1/lancamentos/{Guid.NewGuid()}");
 
@@ -68,7 +68,7 @@ public sealed class LancamentosEndpointsTests
     {
         await using var factory = new LancamentosApiFactory();
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("lancamentos.escrita");
 
         var resposta = await client.PostAsJsonAsync("/api/v1/lancamentos", new { });
 
@@ -88,7 +88,7 @@ public sealed class LancamentosEndpointsTests
     {
         await using var factory = new LancamentosApiFactory();
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("lancamentos.escrita");
         using var content = new StringContent(
             "{\"Tipo\":\"Credito\",\"Valor\":10.00,\"DataLancamento\":\"17/03/2026\"}",
             System.Text.Encoding.UTF8,
@@ -110,7 +110,7 @@ public sealed class LancamentosEndpointsTests
     {
         await using var factory = new LancamentosApiFactory();
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("lancamentos.escrita");
 
         const string correlacaoId = "corr-integracao-publicacao";
         var requisicao = new
@@ -158,7 +158,7 @@ public sealed class LancamentosEndpointsTests
     {
         await using var factory = new LancamentosApiFactory(falhasRestantesPublicacao: int.MaxValue);
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("lancamentos.escrita", "lancamentos.leitura");
 
         const string correlacaoId = "corr-integracao-falha";
         var requisicao = new
@@ -197,6 +197,37 @@ public sealed class LancamentosEndpointsTests
         Assert.Null(mensagemSaida.PublicadaEmUtc);
         Assert.NotNull(mensagemSaida.UltimoErro);
         Assert.Empty(factory.PublicadorMensagens.ListarMensagensPublicadas());
+    }
+
+    [Fact]
+    public async Task DeveRetornarUnauthorizedQuandoTokenNaoForInformado()
+    {
+        await using var factory = new LancamentosApiFactory();
+        await factory.InicializarBancoAsync();
+        using var client = factory.CreateClient();
+
+        var resposta = await client.GetAsync($"/api/v1/lancamentos/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeveRetornarForbiddenQuandoTokenNaoPossuirPermissaoDeEscrita()
+    {
+        await using var factory = new LancamentosApiFactory();
+        await factory.InicializarBancoAsync();
+        using var client = factory.CriarClientAutenticado("lancamentos.leitura");
+
+        var requisicao = new
+        {
+            Tipo = "Credito",
+            Valor = 15m,
+            DataLancamento = new DateOnly(2026, 3, 17)
+        };
+
+        var resposta = await client.PostAsJsonAsync("/api/v1/lancamentos", requisicao);
+
+        Assert.Equal(HttpStatusCode.Forbidden, resposta.StatusCode);
     }
 
     private static async Task<T?> AguardarAteAsync<T>(

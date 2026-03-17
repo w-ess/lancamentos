@@ -1,4 +1,5 @@
 using System.Globalization;
+using ConsolidadoDiario.Api.Autenticacao;
 using ConsolidadoDiario.Aplicacao.CasosDeUso;
 using ConsolidadoDiario.Aplicacao.CasosDeUso.ConsultarSaldoDiario;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -12,6 +13,7 @@ public static class SaldosDiariosEndpoints
         var grupo = app.MapGroup("/api/v1/saldos-diarios");
 
         grupo.MapGet("/{data}", ObterPorDataAsync)
+            .RequireAuthorization(PoliticasAutorizacao.ConsolidadoLeitura)
             .WithName("ObterSaldoDiarioPorData");
 
         return app;

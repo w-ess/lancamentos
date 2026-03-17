@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Lancamentos.Api.Autenticacao;
 using Lancamentos.Api.Contratos;
 using Lancamentos.Aplicacao.CasosDeUso;
 using Lancamentos.Aplicacao.CasosDeUso.ConsultarLancamento;
@@ -13,8 +14,10 @@ public static class LancamentosEndpoints
     {
         var grupo = app.MapGroup("/api/v1/lancamentos");
 
-        grupo.MapPost("/", RegistrarAsync);
+        grupo.MapPost("/", RegistrarAsync)
+            .RequireAuthorization(PoliticasAutorizacao.LancamentosEscrita);
         grupo.MapGet("/{id:guid}", ObterPorIdAsync)
+            .RequireAuthorization(PoliticasAutorizacao.LancamentosLeitura)
             .WithName("ObterLancamentoPorId");
 
         return app;

@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+using Lancamentos.Api.Autenticacao;
 using Lancamentos.Infraestrutura.Persistencia;
 using Lancamentos.Infraestrutura.Mensageria;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +14,9 @@ namespace Lancamentos.Testes.Integracao.Infraestrutura;
 
 public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsyncDisposable
 {
+    private const string JwtIssuer = "fluxodecaixa-testes";
+    private const string JwtAudience = "fluxodecaixa-clientes-testes";
+    private const string JwtChaveAssinatura = "chave-de-assinatura-dos-testes-com-32b";
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
     private readonly int _falhasRestantesPublicacao;
 
@@ -31,7 +36,11 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
             {
                 [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.AtrasoInicialEmMilissegundos)}"] = "500",
                 [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.IntervaloEmMilissegundos)}"] = "50",
-                [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.QuantidadePorLote)}"] = "20"
+                [$"{PublicadorMensagensSaidaOpcoes.Secao}:{nameof(PublicadorMensagensSaidaOpcoes.QuantidadePorLote)}"] = "20",
+                [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.Issuer)}"] = JwtIssuer,
+                [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.Audience)}"] = JwtAudience,
+                [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.ChaveAssinatura)}"] = JwtChaveAssinatura,
+                [$"{AutenticacaoJwtOpcoes.Secao}:{nameof(AutenticacaoJwtOpcoes.ExpiracaoEmMinutos)}"] = "60"
             });
         });
 
@@ -49,6 +58,27 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
             services.AddSingleton<IPublicadorMensagensIntegracao>(provider =>
                 provider.GetRequiredService<PublicadorMensagensIntegracaoFalso>());
         });
+    }
+
+    public HttpClient CriarClientAutenticado(params string[] escopos)
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GerarToken(escopos));
+        return client;
+    }
+
+    public string GerarToken(params string[] escopos)
+    {
+        var emitidoEmUtc = new DateTimeOffset(new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc));
+        var expiraEmUtc = emitidoEmUtc.AddHours(1);
+
+        return JwtTokenTesteHelper.GerarToken(
+            JwtIssuer,
+            JwtAudience,
+            JwtChaveAssinatura,
+            escopos,
+            emitidoEmUtc,
+            expiraEmUtc);
     }
 
     public async Task InicializarBancoAsync()

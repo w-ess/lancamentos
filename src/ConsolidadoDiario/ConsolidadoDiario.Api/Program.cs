@@ -1,3 +1,4 @@
+using ConsolidadoDiario.Api.Autenticacao;
 using ConsolidadoDiario.Api.Endpoints;
 using ConsolidadoDiario.Api.Erros;
 using ConsolidadoDiario.Aplicacao.CasosDeUso.ConsultarSaldoDiario;
@@ -16,6 +17,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ManipuladorExcecoesHttp>();
 
 builder.Services.AdicionarInfraestruturaConsolidadoDiario(builder.Configuration);
+builder.Services.AdicionarAutenticacaoJwtConsolidadoDiario(builder.Configuration);
 
 var consultaSaldoOpcoes = builder.Configuration
     .GetSection(ConsultarSaldoDiarioOpcoes.Secao)
@@ -29,6 +31,8 @@ builder.Services.AddScoped<ConsultarSaldoDiarioPorDataCasoDeUso>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseStatusCodePages(async contextoStatusCode =>
 {
     if (contextoStatusCode.HttpContext.Response.StatusCode != StatusCodes.Status400BadRequest)

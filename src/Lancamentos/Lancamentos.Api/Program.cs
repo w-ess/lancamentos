@@ -1,3 +1,4 @@
+using Lancamentos.Api.Autenticacao;
 using Lancamentos.Api.Endpoints;
 using Lancamentos.Api.Erros;
 using Lancamentos.Aplicacao.CasosDeUso.ConsultarLancamento;
@@ -17,12 +18,15 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ManipuladorExcecoesHttp>();
 
 builder.Services.AdicionarInfraestruturaLancamentos(builder.Configuration);
+builder.Services.AdicionarAutenticacaoJwtLancamentos(builder.Configuration);
 builder.Services.AddScoped<RegistrarLancamentoCasoDeUso>();
 builder.Services.AddScoped<ConsultarLancamentoPorIdCasoDeUso>();
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseStatusCodePages(async contextoStatusCode =>
 {
     if (contextoStatusCode.HttpContext.Response.StatusCode != StatusCodes.Status400BadRequest)

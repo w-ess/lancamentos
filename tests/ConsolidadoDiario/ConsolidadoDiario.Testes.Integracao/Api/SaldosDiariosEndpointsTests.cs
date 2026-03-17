@@ -28,7 +28,7 @@ public sealed class SaldosDiariosEndpointsTests
             await dbContext.SaveChangesAsync();
         });
 
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("consolidado.leitura");
 
         var resposta = await client.GetAsync("/api/v1/saldos-diarios/2026-03-17");
 
@@ -64,7 +64,7 @@ public sealed class SaldosDiariosEndpointsTests
             await dbContext.SaveChangesAsync();
         });
 
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("consolidado.leitura");
 
         var resposta = await client.GetAsync("/api/v1/saldos-diarios/2026-03-17");
 
@@ -101,7 +101,7 @@ public sealed class SaldosDiariosEndpointsTests
             await dbContext.SaveChangesAsync();
         });
 
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("consolidado.leitura");
 
         var resposta = await client.GetAsync("/api/v1/saldos-diarios/2026-03-17");
 
@@ -118,7 +118,7 @@ public sealed class SaldosDiariosEndpointsTests
     {
         await using var factory = new ConsolidadoDiarioApiFactory();
         await factory.InicializarBancoAsync();
-        using var client = factory.CreateClient();
+        using var client = factory.CriarClientAutenticado("consolidado.leitura");
 
         var resposta = await client.GetAsync("/api/v1/saldos-diarios/17-03-2026");
 
@@ -129,6 +129,30 @@ public sealed class SaldosDiariosEndpointsTests
         Assert.NotNull(problemDetails);
         Assert.Equal(400, problemDetails.Status);
         Assert.Contains("Data", problemDetails.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task DeveRetornarUnauthorizedQuandoTokenNaoForInformado()
+    {
+        await using var factory = new ConsolidadoDiarioApiFactory();
+        await factory.InicializarBancoAsync();
+        using var client = factory.CreateClient();
+
+        var resposta = await client.GetAsync("/api/v1/saldos-diarios/2026-03-17");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeveRetornarForbiddenQuandoTokenNaoPossuirPermissaoDeLeituraDoConsolidado()
+    {
+        await using var factory = new ConsolidadoDiarioApiFactory();
+        await factory.InicializarBancoAsync();
+        using var client = factory.CriarClientAutenticado("lancamentos.leitura");
+
+        var resposta = await client.GetAsync("/api/v1/saldos-diarios/2026-03-17");
+
+        Assert.Equal(HttpStatusCode.Forbidden, resposta.StatusCode);
     }
 
     private static LancamentoProcessado CriarLancamentoProcessado(
