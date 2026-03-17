@@ -8,6 +8,9 @@ public interface IConsolidadoDiarioRepositorio
         DateOnly data,
         CancellationToken cancellationToken = default);
 
+    Task<DateTime?> ObterUltimoProcessamentoUtcAsync(
+        CancellationToken cancellationToken = default);
+
     Task AdicionarSaldoAsync(
         SaldoDiario saldoDiario,
         CancellationToken cancellationToken = default);

@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
@@ -27,7 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\ConsolidadoDiario\ConsolidadoDiario.Api\ConsolidadoDiario.Api.csproj" />
     <ProjectReference Include="..\..\..\src\ConsolidadoDiario\ConsolidadoDiario.Infraestrutura\ConsolidadoDiario.Infraestrutura.csproj" />
-    <ProjectReference Include="..\..\..\src\ConsolidadoDiario\ConsolidadoDiario.Processador\ConsolidadoDiario.Processador.csproj" />
   </ItemGroup>
 
 </Project>

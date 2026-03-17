@@ -6,9 +6,9 @@ Toda vez que uma tarefa for concluida, este arquivo deve ser atualizado para que
 
 ## Resumo atual
 
-- Estado geral: T01, T02, T03, T04, T05 e T06 concluidas; aguardando inicio da T07
-- Ultima tarefa concluida: T06 - Implementar o dominio e o processador de ConsolidadoDiario
-- Proxima tarefa: T07 - Implementar API de consulta do consolidado
+- Estado geral: T01, T02, T03, T04, T05, T06 e T07 concluidas; aguardando inicio da T08
+- Ultima tarefa concluida: T07 - Implementar API de consulta do consolidado
+- Proxima tarefa: T08 - Implementar autenticacao e autorizacao
 - Ultima atualizacao: 2026-03-17
 - Bloqueios conhecidos: nenhum
 
@@ -111,3 +111,15 @@ Copiar o modelo abaixo ao concluir cada tarefa:
 - Decisoes tomadas: duplicar o contrato `LancamentoRegistradoV1` no contexto de `ConsolidadoDiario` para evitar acoplamento de codigo entre servicos; persistir a idempotencia em `lancamentos_processados` usando `LancamentoId` como chave primaria e `EventoId` apenas para rastreabilidade; manter o processamento sequencial no consumidor com `prefetch` 1 e `ack` somente depois do `SaveChanges`; enviar mensagens com falha para DLQ em vez de reencaminhar automaticamente; usar SQLite em memoria nos testes de integracao do consolidado para validar mapeamentos e persistencia sem depender de PostgreSQL ou RabbitMQ local.
 - Pendencias: nenhuma dentro do escopo da T06; a API de leitura `GET /api/v1/saldos-diarios/{data}` e o contrato HTTP do saldo diario ainda nao foram implementados e seguem para a T07.
 - Proxima tarefa recomendada: T07 - Implementar API de consulta do consolidado.
+
+## T07 - Implementar API de consulta do consolidado
+
+- Status: concluida
+- Data: 2026-03-17
+- Objetivo da tarefa: expor `GET /api/v1/saldos-diarios/{data}` com retorno consistente para datas com e sem movimento, incluindo indicador de defasagem e testes de aplicacao e API.
+- O que foi feito: criado o caso de uso `ConsultarSaldoDiarioPorDataCasoDeUso` com retorno do contrato `SaldoDiarioDto`, consulta ao saldo por data e leitura da ultima confirmacao global de processamento para calcular `Defasado`; adicionada a configuracao `ConsultaSaldoDiario:AtrasoMaximoToleradoEmMinutos` com valor padrao `5`; implementado o endpoint `GET /api/v1/saldos-diarios/{data}` com validacao explicita do formato `yyyy-MM-dd`, serializacao mantendo nomes em PascalCase e tratamento padrao de erros com `ProblemDetails`; ajustado o repositorio para consultar o ultimo `ProcessadoEmUtc`; implementados testes unitarios do caso de uso cobrindo saldo existente, data sem movimento, saldo defasado e o fallback sem confirmacoes conhecidas; implementados testes de integracao da API com `WebApplicationFactory` e SQLite em memoria cobrindo resposta para data com movimento, data sem movimento, `Defasado=true` e `400` para data invalida.
+- Arquivos criados ou alterados: `src/ConsolidadoDiario/ConsolidadoDiario.Api/Program.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Api/appsettings.json`; `src/ConsolidadoDiario/ConsolidadoDiario.Api/Endpoints/SaldosDiariosEndpoints.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Api/Erros/ManipuladorExcecoesHttp.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Aplicacao/Abstracoes/IConsolidadoDiarioRepositorio.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Aplicacao/CasosDeUso/SaldoDiarioDto.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Aplicacao/CasosDeUso/ConsultarSaldoDiario/ConsultarSaldoDiarioOpcoes.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Aplicacao/CasosDeUso/ConsultarSaldoDiario/ConsultarSaldoDiarioPorDataCasoDeUso.cs`; `src/ConsolidadoDiario/ConsolidadoDiario.Infraestrutura/Repositorios/ConsolidadoDiarioRepositorio.cs`; `tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Unitarios/Doubles/ConsolidadoDiarioRepositorioEmMemoria.cs`; `tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Unitarios/Aplicacao/ConsultarSaldoDiarioPorDataCasoDeUsoTests.cs`; `tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Integracao/ConsolidadoDiario.Testes.Integracao.csproj`; `tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Integracao/Infraestrutura/ConsolidadoDiarioApiFactory.cs`; `tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Integracao/Api/SaldosDiariosEndpointsTests.cs`; `docs/REGISTRO_DE_EXECUCAO.md`.
+- Testes executados: `dotnet test tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Unitarios/ConsolidadoDiario.Testes.Unitarios.csproj -c Release --logger 'console;verbosity=minimal'` com 22 testes aprovados; `dotnet test tests/ConsolidadoDiario/ConsolidadoDiario.Testes.Integracao/ConsolidadoDiario.Testes.Integracao.csproj -c Release --logger 'console;verbosity=minimal'` com 6 testes aprovados; `dotnet test FluxoDeCaixa.sln -c Release --logger 'console;verbosity=minimal'` com 58 testes aprovados no total, sendo 22 em `ConsolidadoDiario.Testes.Unitarios`, 6 em `ConsolidadoDiario.Testes.Integracao`, 24 em `Lancamentos.Testes.Unitarios` e 6 em `Lancamentos.Testes.Integracao`.
+- Decisoes tomadas: manter o campo HTTP `AtualizadoEmUtc` para preservar consistencia com os demais timestamps UTC do projeto; calcular `Defasado` a partir do ultimo `ProcessadoEmUtc` conhecido globalmente, e nao a partir do `AtualizadoEmUtc` do saldo consultado; usar o instante atual da leitura como referencia inicial quando ainda nao houver nenhuma confirmacao conhecida do processador; tratar a data de rota apenas no formato ISO `yyyy-MM-dd`; usar `WebApplicationFactory` com SQLite em memoria para validar a API sem dependencia de PostgreSQL local.
+- Pendencias: nenhuma dentro do escopo da T07; autenticacao JWT, politicas de autorizacao e testes de `401`/`403` seguem para a T08.
+- Proxima tarefa recomendada: T08 - Implementar autenticacao e autorizacao.

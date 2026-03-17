@@ -24,6 +24,16 @@ public sealed class ConsolidadoDiarioRepositorio : IConsolidadoDiarioRepositorio
             .SingleOrDefaultAsync(saldo => saldo.Data == data, cancellationToken);
     }
 
+    public Task<DateTime?> ObterUltimoProcessamentoUtcAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.LancamentosProcessados
+            .AsNoTracking()
+            .OrderByDescending(lancamento => lancamento.ProcessadoEmUtc)
+            .Select(lancamento => (DateTime?)lancamento.ProcessadoEmUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task AdicionarSaldoAsync(
         SaldoDiario saldoDiario,
         CancellationToken cancellationToken = default)
