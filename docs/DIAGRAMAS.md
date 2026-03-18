@@ -26,6 +26,8 @@ flowchart LR
     ConsApi --> ConsDb
 ```
 
+![Diagrama estatico dos componentes](./imagens/diagrama-componentes.svg)
+
 ## Sequencia do fluxo principal
 
 ```mermaid
@@ -50,6 +52,8 @@ sequenceDiagram
     A-->>C: 200 OK
 ```
 
+![Diagrama estatico do fluxo principal](./imagens/diagrama-fluxo-principal.svg)
+
 ## Comportamento esperado em falha
 
 ```mermaid
@@ -68,3 +72,5 @@ sequenceDiagram
     Note over P: API do consolidado ou processador pode estar parado
     Note over C,L: O transacional continua operando\ncom consistencia eventual
 ```
+
+![Diagrama estatico do comportamento em falha](./imagens/diagrama-falha.svg)

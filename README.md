@@ -111,6 +111,138 @@ curl "http://localhost:8082/api/v1/saldos-diarios/2026-03-17" \
 - RabbitMQ AMQP: `localhost:55672`
 - RabbitMQ Management: `http://localhost:55673`
 
+## O que e cada servico
+
+O sistema nao e uma API unica. Ele e dividido em 3 processos com responsabilidades diferentes:
+
+### 1. `Lancamentos`
+
+O que e:
+
+- a API transacional do sistema
+- a porta de entrada para registrar um credito ou debito
+- o servico que guarda o fato original do negocio
+
+O que faz:
+
+- recebe `POST /api/v1/lancamentos`
+- valida o payload e a autenticacao
+- grava o lancamento no banco `lancamentos_db`
+- grava a mensagem na tabela `outbox_messages`
+- permite consultar um lancamento especifico por `Id`
+
+O que ele nao faz:
+
+- nao calcula o saldo diario consolidado
+- nao depende da API de consolidado para aceitar uma gravacao
+
+Em outras palavras: `Lancamentos` e o sistema de registro oficial. Se um credito ou debito foi aceito, ele fica persistido aqui primeiro.
+
+### 2. `Processador`
+
+O que e:
+
+- um worker em background
+- o consumidor assincrono dos eventos gerados por `Lancamentos`
+- o responsavel por transformar lancamentos em saldo diario agregado
+
+O que faz:
+
+- recebe eventos publicados pelo fluxo de outbox + RabbitMQ
+- consome o evento `LancamentoRegistradoV1`
+- interpreta se o valor deve somar ou subtrair no saldo
+- atualiza o banco `consolidado_db`
+
+O que ele nao faz:
+
+- nao atende requisicoes HTTP do cliente
+- nao registra lancamentos novos
+- nao substitui a API `ConsolidadoDiario`; ele apenas mantem os dados dela atualizados
+
+Em outras palavras: `Processador` e a ponte entre o mundo transacional e o mundo de leitura consolidada.
+
+### 3. `ConsolidadoDiario`
+
+O que e:
+
+- a API de consulta do saldo diario
+- a camada de leitura do sistema
+- o servico voltado a responder "qual e o saldo consolidado nesta data?"
+
+O que faz:
+
+- recebe `GET /api/v1/saldos-diarios/{data}`
+- le o saldo pronto no banco `consolidado_db`
+- devolve a visao agregada do dia consultado
+
+O que ele nao faz:
+
+- nao cria lancamentos
+- nao processa eventos do RabbitMQ
+- nao recalcula saldo sob demanda a cada consulta
+
+Em outras palavras: `ConsolidadoDiario` so consulta o resultado ja processado pelo `Processador`.
+
+## Fluxo de cada servico
+
+### Fluxo do `Lancamentos`
+
+1. O cliente chama `POST /api/v1/lancamentos`.
+2. A API valida autenticacao, payload e regras basicas.
+3. O lancamento e gravado no `lancamentos_db`.
+4. Na mesma unidade transacional, o evento correspondente e salvo em `outbox_messages`.
+5. A API responde `201 Created` para o cliente.
+6. Depois disso, o evento segue para publicacao no RabbitMQ.
+
+Resultado esperado:
+
+- o dado principal do negocio ja esta salvo, mesmo que o consolidado ainda nao tenha sido atualizado
+
+### Fluxo do `Processador`
+
+1. O evento de lancamento chega ao RabbitMQ.
+2. O `Processador` consome `LancamentoRegistradoV1`.
+3. Ele identifica data, tipo (`Credito` ou `Debito`) e valor.
+4. Ele aplica a atualizacao correspondente no saldo diario do `consolidado_db`.
+5. O saldo agregado passa a refletir aquele lancamento para consultas futuras.
+
+Resultado esperado:
+
+- o saldo diario e atualizado de forma assincrona
+- por isso a consistencia do consolidado e eventual, nao imediata
+
+### Fluxo do `ConsolidadoDiario`
+
+1. O cliente chama `GET /api/v1/saldos-diarios/{data}`.
+2. A API consulta diretamente o `consolidado_db`.
+3. Ela retorna o saldo diario ja agregado para a data informada.
+
+Resultado esperado:
+
+- a resposta e rapida, porque o calculo pesado ja foi feito antes pelo `Processador`
+- o retorno mostra o estado consolidado mais recente disponivel naquele momento
+
+## Fluxo ponta a ponta entre os 3 servicos
+
+1. O cliente envia um lancamento para `Lancamentos`.
+2. `Lancamentos` persiste o fato no `lancamentos_db` e registra o evento na outbox.
+3. O evento e publicado no RabbitMQ.
+4. O `Processador` consome esse evento e atualiza o `consolidado_db`.
+5. O cliente consulta `ConsolidadoDiario`.
+6. `ConsolidadoDiario` responde com o saldo diario ja consolidado.
+
+Leitura correta da arquitetura:
+
+- `Lancamentos` e escrita transacional
+- `Processador` e integracao/propagacao assincrona
+- `ConsolidadoDiario` e leitura consolidada
+
+Consequencia pratica:
+
+- se `ConsolidadoDiario` ou o `Processador` cairem, `Lancamentos` continua registrando
+- quando o processamento voltar, o saldo consolidado sera atualizado
+- isso existe para desacoplar gravacao de consulta e manter o sistema resiliente
+
 ## Acessos locais
 
 Se voce quiser conectar manualmente nos bancos locais com os valores padrao do Docker Compose, use:
