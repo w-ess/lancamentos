@@ -2,7 +2,7 @@ namespace ConsolidadoDiario.Aplicacao.Integracao;
 
 public sealed record LancamentoRegistradoV1(
     Guid EventoId,
-    DateTime OcorridoEmUtc,
+    DateTime Ocorrido,
     Guid LancamentoId,
     string Tipo,
     decimal Valor,

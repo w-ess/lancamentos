@@ -31,11 +31,11 @@ public sealed class OutboxMessageMapeamento : IEntityTypeConfiguration<OutboxMes
             .HasMaxLength(200)
             .IsRequired();
 
-        builder.Property(mensagem => mensagem.OcorridaEmUtc)
+        builder.Property(mensagem => mensagem.Ocorrida)
             .HasColumnName("ocorrida_em_utc")
             .IsRequired();
 
-        builder.Property(mensagem => mensagem.PublicadaEmUtc)
+        builder.Property(mensagem => mensagem.Publicada)
             .HasColumnName("publicada_em_utc");
 
         builder.Property(mensagem => mensagem.TentativasPublicacao)
@@ -46,12 +46,12 @@ public sealed class OutboxMessageMapeamento : IEntityTypeConfiguration<OutboxMes
             .HasColumnName("ultimo_erro")
             .HasMaxLength(2000);
 
-        builder.Ignore(mensagem => mensagem.Publicada);
+        builder.Ignore(mensagem => mensagem.EstaPublicada);
 
         builder.HasIndex(mensagem => new
             {
-                mensagem.PublicadaEmUtc,
-                mensagem.OcorridaEmUtc
+                mensagem.Publicada,
+                mensagem.Ocorrida
             })
             .HasDatabaseName("ix_outbox_messages_publicada_ocorrida");
     }

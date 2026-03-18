@@ -15,6 +15,6 @@ public sealed record SaldoDiarioDto(
     [property: SwaggerSchema("Saldo final da data.")]
     decimal Saldo,
     [property: SwaggerSchema("Data e hora UTC da ultima atualizacao do consolidado.", Format = "date-time")]
-    DateTime AtualizadoEmUtc,
+    DateTime Atualizado,
     [property: SwaggerSchema("Indica se o saldo ainda pode estar defasado em relacao aos lancamentos mais recentes.")]
     bool Defasado);

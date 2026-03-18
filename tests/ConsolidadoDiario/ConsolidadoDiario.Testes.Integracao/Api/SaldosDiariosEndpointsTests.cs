@@ -12,19 +12,19 @@ public sealed class SaldosDiariosEndpointsTests
     [Fact]
     public async Task DeveRetornarSaldoDiarioParaDataComMovimento()
     {
-        var atualizadoEmUtc = new DateTime(2026, 3, 17, 15, 58, 0, DateTimeKind.Utc);
+        var atualizado = new DateTime(2026, 3, 17, 15, 58, 0, DateTimeKind.Utc);
 
         await using var factory = new ConsolidadoDiarioApiFactory(
             agoraUtc: new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc));
         await factory.InicializarBancoAsync();
         await factory.ExecutarNoDbContextAsync(async dbContext =>
         {
-            await dbContext.SaldosDiarios.AddAsync(SaldoDiario.Criar(new DateOnly(2026, 3, 17), 120.50m, 20m, atualizadoEmUtc));
+            await dbContext.SaldosDiarios.AddAsync(SaldoDiario.Criar(new DateOnly(2026, 3, 17), 120.50m, 20m, atualizado));
             await dbContext.LancamentosProcessados.AddAsync(CriarLancamentoProcessado(
                 new DateOnly(2026, 3, 17),
                 "Credito",
                 120.50m,
-                atualizadoEmUtc));
+                atualizado));
             await dbContext.SaveChangesAsync();
         });
 
@@ -41,7 +41,7 @@ public sealed class SaldosDiariosEndpointsTests
         Assert.Equal(120.50m, saldo.TotalCreditos);
         Assert.Equal(20m, saldo.TotalDebitos);
         Assert.Equal(100.50m, saldo.Saldo);
-        Assert.Equal(atualizadoEmUtc, saldo.AtualizadoEmUtc);
+        Assert.Equal(atualizado, saldo.Atualizado);
         Assert.False(saldo.Defasado);
     }
 
@@ -77,14 +77,14 @@ public sealed class SaldosDiariosEndpointsTests
         Assert.Equal(0m, saldo.TotalCreditos);
         Assert.Equal(0m, saldo.TotalDebitos);
         Assert.Equal(0m, saldo.Saldo);
-        Assert.Equal(ultimoProcessamentoUtc, saldo.AtualizadoEmUtc);
+        Assert.Equal(ultimoProcessamentoUtc, saldo.Atualizado);
         Assert.False(saldo.Defasado);
     }
 
     [Fact]
     public async Task DeveIndicarQuandoSaldoEstiverDefasado()
     {
-        var atualizadoEmUtc = new DateTime(2026, 3, 17, 15, 50, 0, DateTimeKind.Utc);
+        var atualizado = new DateTime(2026, 3, 17, 15, 50, 0, DateTimeKind.Utc);
 
         await using var factory = new ConsolidadoDiarioApiFactory(
             agoraUtc: new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc),
@@ -92,12 +92,12 @@ public sealed class SaldosDiariosEndpointsTests
         await factory.InicializarBancoAsync();
         await factory.ExecutarNoDbContextAsync(async dbContext =>
         {
-            await dbContext.SaldosDiarios.AddAsync(SaldoDiario.Criar(new DateOnly(2026, 3, 17), 60m, 10m, atualizadoEmUtc));
+            await dbContext.SaldosDiarios.AddAsync(SaldoDiario.Criar(new DateOnly(2026, 3, 17), 60m, 10m, atualizado));
             await dbContext.LancamentosProcessados.AddAsync(CriarLancamentoProcessado(
                 new DateOnly(2026, 3, 17),
                 "Credito",
                 60m,
-                atualizadoEmUtc));
+                atualizado));
             await dbContext.SaveChangesAsync();
         });
 
@@ -159,7 +159,7 @@ public sealed class SaldosDiariosEndpointsTests
         DateOnly dataLancamento,
         string tipo,
         decimal valor,
-        DateTime processadoEmUtc)
+        DateTime processado)
     {
         return LancamentoProcessado.Criar(
             Guid.NewGuid(),
@@ -168,8 +168,8 @@ public sealed class SaldosDiariosEndpointsTests
             ValorMonetario.Criar(valor),
             dataLancamento,
             "correlacao-api",
-            processadoEmUtc.AddMinutes(-1),
-            processadoEmUtc);
+            processado.AddMinutes(-1),
+            processado);
     }
 
     private sealed record SaldoDiarioResponse(
@@ -177,6 +177,6 @@ public sealed class SaldosDiariosEndpointsTests
         decimal TotalCreditos,
         decimal TotalDebitos,
         decimal Saldo,
-        DateTime AtualizadoEmUtc,
+        DateTime Atualizado,
         bool Defasado);
 }

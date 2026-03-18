@@ -42,7 +42,7 @@ public sealed class PublicadorRabbitMqMensagensIntegracao :
                 Type = outboxMessage.Tipo,
                 ContentType = "application/json",
                 DeliveryMode = DeliveryModes.Persistent,
-                Timestamp = new AmqpTimestamp(new DateTimeOffset(outboxMessage.OcorridaEmUtc).ToUnixTimeSeconds())
+                Timestamp = new AmqpTimestamp(new DateTimeOffset(outboxMessage.Ocorrida).ToUnixTimeSeconds())
             };
 
             var corpo = Encoding.UTF8.GetBytes(outboxMessage.Conteudo);

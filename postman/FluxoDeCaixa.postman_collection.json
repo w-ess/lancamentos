@@ -104,10 +104,6 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Health respondeu 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
-                  "",
                   "pm.test('JWT gerado e salvo na collection', function () {",
                   "  pm.expect(pm.collectionVariables.get('jwt_token')).to.be.a('string').and.not.empty;",
                   "});"
@@ -116,18 +112,20 @@
             }
           ],
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{lancamentos_base_url}}/health",
+              "raw": "https://postman-echo.com/post",
+              "protocol": "https",
               "host": [
-                "{{lancamentos_base_url}}"
+                "postman-echo",
+                "com"
               ],
               "path": [
-                "health"
+                "post"
               ]
             },
-            "description": "Gera localmente um JWT HS256 e salva em {{jwt_token}}. A chamada ao /health serve apenas para facilitar o uso no Postman."
+            "description": "Gera localmente um JWT HS256 e salva em {{jwt_token}}. A chamada existe apenas para disparar o script no Postman, sem depender do /health da API."
           },
           "response": []
         }

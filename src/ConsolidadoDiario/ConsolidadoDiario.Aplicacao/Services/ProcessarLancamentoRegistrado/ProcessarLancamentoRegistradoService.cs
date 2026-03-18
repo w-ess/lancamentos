@@ -37,16 +37,16 @@ public sealed class ProcessarLancamentoRegistradoService
 
         var tipo = TipoLancamento.Criar(evento.Tipo);
         var valor = ValorMonetario.Criar(evento.Valor);
-        var processadoEmUtc = _relogioUtc.UtcNow;
+        var processado = _relogioUtc.UtcNow;
 
         var saldoDiario = await _repositorio.ObterSaldoPorDataAsync(evento.DataLancamento, cancellationToken);
         if (saldoDiario is null)
         {
-            saldoDiario = SaldoDiario.Criar(evento.DataLancamento, processadoEmUtc);
+            saldoDiario = SaldoDiario.Criar(evento.DataLancamento, processado);
             await _repositorio.AdicionarSaldoAsync(saldoDiario, cancellationToken);
         }
 
-        saldoDiario.AplicarLancamento(tipo, valor, processadoEmUtc);
+        saldoDiario.AplicarLancamento(tipo, valor, processado);
 
         var lancamentoProcessado = LancamentoProcessado.Criar(
             evento.LancamentoId,
@@ -55,8 +55,8 @@ public sealed class ProcessarLancamentoRegistradoService
             valor,
             evento.DataLancamento,
             evento.CorrelacaoId,
-            evento.OcorridoEmUtc,
-            processadoEmUtc);
+            evento.Ocorrido,
+            processado);
 
         await _repositorio.AdicionarLancamentoProcessadoAsync(lancamentoProcessado, cancellationToken);
         await _repositorio.SalvarAlteracoesAsync(cancellationToken);

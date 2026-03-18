@@ -8,19 +8,19 @@ public sealed class OutboxMessageTests
     [Fact]
     public void DeveCriarOutboxMessageValida()
     {
-        var ocorridaEmUtc = new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc);
+        var ocorrida = new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc);
 
         var mensagem = OutboxMessage.Criar(
             Guid.NewGuid(),
             "LancamentoRegistradoV1",
             "{\"EventoId\":\"123\"}",
             "correlacao-123",
-            ocorridaEmUtc);
+            ocorrida);
 
         Assert.Equal("LancamentoRegistradoV1", mensagem.Tipo);
         Assert.Equal("correlacao-123", mensagem.CorrelacaoId);
-        Assert.Equal(ocorridaEmUtc, mensagem.OcorridaEmUtc);
-        Assert.False(mensagem.Publicada);
+        Assert.Equal(ocorrida, mensagem.Ocorrida);
+        Assert.False(mensagem.EstaPublicada);
     }
 
     [Fact]
@@ -37,11 +37,11 @@ public sealed class OutboxMessageTests
 
         Assert.Equal(1, mensagem.TentativasPublicacao);
         Assert.Equal("falha temporaria", mensagem.UltimoErro);
-        Assert.Null(mensagem.PublicadaEmUtc);
+        Assert.Null(mensagem.Publicada);
     }
 
     [Fact]
-    public void DeveExigirOcorrenciaEmUtc()
+    public void DeveExigirOcorrenciaUtc()
     {
         var ocorridaEmLocal = new DateTime(2026, 3, 17, 13, 0, 0, DateTimeKind.Local);
 

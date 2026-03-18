@@ -41,7 +41,7 @@ public sealed class RegistrarLancamentoService
             nameof(LancamentoRegistradoV1),
             JsonSerializer.Serialize(evento),
             comando.CorrelacaoId,
-            evento.OcorridoEmUtc);
+            evento.Ocorrido);
 
         await _repositorio.RegistrarAsync(lancamento, outboxMessage, cancellationToken);
 

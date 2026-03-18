@@ -45,13 +45,13 @@ public sealed class InfraestruturaEndToEndFixture : IAsyncLifetime
 
     public string GerarToken(params string[] escopos)
     {
-        var emitidoEmUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
+        var emitido = DateTimeOffset.UtcNow.AddMinutes(-1);
 
         return Autenticacao.JwtTokenTesteHelper.GerarToken(
             JwtChaveAssinatura,
             escopos,
-            emitidoEmUtc,
-            emitidoEmUtc.AddHours(1));
+            emitido,
+            emitido.AddHours(1));
     }
 
     public async Task ResetarEstadoAsync()

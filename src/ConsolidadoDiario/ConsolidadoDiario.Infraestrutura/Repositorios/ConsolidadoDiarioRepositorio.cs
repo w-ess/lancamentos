@@ -29,8 +29,8 @@ public sealed class ConsolidadoDiarioRepositorio : IConsolidadoDiarioRepositorio
     {
         return _dbContext.LancamentosProcessados
             .AsNoTracking()
-            .OrderByDescending(lancamento => lancamento.ProcessadoEmUtc)
-            .Select(lancamento => (DateTime?)lancamento.ProcessadoEmUtc)
+            .OrderByDescending(lancamento => lancamento.Processado)
+            .Select(lancamento => (DateTime?)lancamento.Processado)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

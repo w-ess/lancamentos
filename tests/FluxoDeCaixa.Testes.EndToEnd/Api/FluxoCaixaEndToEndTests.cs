@@ -132,13 +132,13 @@ public sealed class FluxoCaixaEndToEndTests
         string Tipo,
         decimal Valor,
         DateOnly DataLancamento,
-        DateTime RegistradoEmUtc);
+        DateTime Registrado);
 
     private sealed record SaldoDiarioResponse(
         DateOnly Data,
         decimal TotalCreditos,
         decimal TotalDebitos,
         decimal Saldo,
-        DateTime AtualizadoEmUtc,
+        DateTime Atualizado,
         bool Defasado);
 }

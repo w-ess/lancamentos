@@ -32,7 +32,7 @@ namespace Lancamentos.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("date")
                         .HasColumnName("data_lancamento");
 
-                    b.Property<DateTime>("RegistradoEmUtc")
+                    b.Property<DateTime>("Registrado")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("registrado_em_utc");
 
@@ -69,11 +69,11 @@ namespace Lancamentos.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("correlacao_id");
 
-                    b.Property<DateTime>("OcorridaEmUtc")
+                    b.Property<DateTime>("Ocorrida")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ocorrida_em_utc");
 
-                    b.Property<DateTime?>("PublicadaEmUtc")
+                    b.Property<DateTime?>("Publicada")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("publicada_em_utc");
 
@@ -94,7 +94,7 @@ namespace Lancamentos.Infraestrutura.Persistencia.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PublicadaEmUtc", "OcorridaEmUtc")
+                    b.HasIndex("Publicada", "Ocorrida")
                         .HasDatabaseName("ix_outbox_messages_publicada_ocorrida");
 
                     b.ToTable("outbox_messages", (string)null);

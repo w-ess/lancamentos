@@ -27,8 +27,8 @@ public sealed class OutboxMessageRepository : IOutboxMessageRepository
 
         return await _dbContext.OutboxMessages
             .AsNoTracking()
-            .Where(mensagem => mensagem.PublicadaEmUtc == null)
-            .OrderBy(mensagem => mensagem.OcorridaEmUtc)
+            .Where(mensagem => mensagem.Publicada == null)
+            .OrderBy(mensagem => mensagem.Ocorrida)
             .ThenBy(mensagem => mensagem.Id)
             .Take(quantidadeMaxima)
             .ToArrayAsync(cancellationToken);
@@ -36,11 +36,11 @@ public sealed class OutboxMessageRepository : IOutboxMessageRepository
 
     public async Task MarcarComoPublicadaAsync(
         Guid mensagemId,
-        DateTime publicadaEmUtc,
+        DateTime publicada,
         CancellationToken cancellationToken = default)
     {
         var mensagem = await ObterPorIdAsync(mensagemId, cancellationToken);
-        mensagem.MarcarComoPublicada(publicadaEmUtc);
+        mensagem.MarcarComoPublicada(publicada);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

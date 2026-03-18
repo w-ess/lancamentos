@@ -21,7 +21,7 @@ public sealed class SaldoDiarioTests
         Assert.Equal(150.75m, saldo.TotalCreditos);
         Assert.Equal(0m, saldo.TotalDebitos);
         Assert.Equal(150.75m, saldo.Saldo);
-        Assert.Equal(new DateTime(2026, 3, 17, 12, 5, 0, DateTimeKind.Utc), saldo.AtualizadoEmUtc);
+        Assert.Equal(new DateTime(2026, 3, 17, 12, 5, 0, DateTimeKind.Utc), saldo.Atualizado);
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public sealed class SaldoDiarioTests
             new DateOnly(2026, 3, 17),
             totalCreditos: 200m,
             totalDebitos: 50m,
-            atualizadoEmUtc: new DateTime(2026, 3, 17, 12, 0, 0, DateTimeKind.Utc));
+            atualizado: new DateTime(2026, 3, 17, 12, 0, 0, DateTimeKind.Utc));
 
         saldo.AplicarLancamento(
             TipoLancamento.Criar("Debito"),

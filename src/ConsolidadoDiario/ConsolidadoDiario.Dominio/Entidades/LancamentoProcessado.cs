@@ -12,8 +12,8 @@ public sealed class LancamentoProcessado
         ValorMonetario valor,
         DateOnly dataLancamento,
         string correlacaoId,
-        DateTime ocorridoEmUtc,
-        DateTime processadoEmUtc)
+        DateTime ocorrido,
+        DateTime processado)
     {
         LancamentoId = lancamentoId;
         EventoId = eventoId;
@@ -21,8 +21,8 @@ public sealed class LancamentoProcessado
         Valor = valor;
         DataLancamento = dataLancamento;
         CorrelacaoId = correlacaoId;
-        OcorridoEmUtc = ocorridoEmUtc;
-        ProcessadoEmUtc = processadoEmUtc;
+        Ocorrido = ocorrido;
+        Processado = processado;
     }
 
     public Guid LancamentoId { get; }
@@ -37,9 +37,9 @@ public sealed class LancamentoProcessado
 
     public string CorrelacaoId { get; }
 
-    public DateTime OcorridoEmUtc { get; }
+    public DateTime Ocorrido { get; }
 
-    public DateTime ProcessadoEmUtc { get; }
+    public DateTime Processado { get; }
 
     public static LancamentoProcessado Criar(
         Guid lancamentoId,
@@ -48,8 +48,8 @@ public sealed class LancamentoProcessado
         ValorMonetario valor,
         DateOnly dataLancamento,
         string correlacaoId,
-        DateTime ocorridoEmUtc,
-        DateTime processadoEmUtc)
+        DateTime ocorrido,
+        DateTime processado)
     {
         if (lancamentoId == Guid.Empty)
         {
@@ -74,8 +74,8 @@ public sealed class LancamentoProcessado
             throw new ExcecaoDominio("O identificador de correlacao do lancamento processado e obrigatorio.");
         }
 
-        ValidarUtc(ocorridoEmUtc, "A data de ocorrencia do evento processado deve estar em UTC.");
-        ValidarUtc(processadoEmUtc, "A data de processamento do lancamento deve estar em UTC.");
+        ValidarUtc(ocorrido, "A data de ocorrencia do evento processado deve estar em UTC.");
+        ValidarUtc(processado, "A data de processamento do lancamento deve estar em UTC.");
 
         return new LancamentoProcessado(
             lancamentoId,
@@ -84,8 +84,8 @@ public sealed class LancamentoProcessado
             valor,
             dataLancamento,
             correlacaoId.Trim(),
-            ocorridoEmUtc,
-            processadoEmUtc);
+            ocorrido,
+            processado);
     }
 
     private static void ValidarUtc(DateTime valor, string mensagemQuandoNaoUtc)

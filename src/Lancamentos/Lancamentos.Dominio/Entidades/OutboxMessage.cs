@@ -15,13 +15,13 @@ public sealed class OutboxMessage
         string tipo,
         string conteudo,
         string correlacaoId,
-        DateTime ocorridaEmUtc)
+        DateTime ocorrida)
     {
         Id = id;
         Tipo = tipo;
         Conteudo = conteudo;
         CorrelacaoId = correlacaoId;
-        OcorridaEmUtc = ocorridaEmUtc;
+        Ocorrida = ocorrida;
     }
 
     public Guid Id { get; private set; }
@@ -32,22 +32,22 @@ public sealed class OutboxMessage
 
     public string CorrelacaoId { get; private set; } = string.Empty;
 
-    public DateTime OcorridaEmUtc { get; private set; }
+    public DateTime Ocorrida { get; private set; }
 
-    public DateTime? PublicadaEmUtc { get; private set; }
+    public DateTime? Publicada { get; private set; }
 
     public int TentativasPublicacao { get; private set; }
 
     public string? UltimoErro { get; private set; }
 
-    public bool Publicada => PublicadaEmUtc.HasValue;
+    public bool EstaPublicada => Publicada.HasValue;
 
     public static OutboxMessage Criar(
         Guid id,
         string tipo,
         string conteudo,
         string correlacaoId,
-        DateTime ocorridaEmUtc)
+        DateTime ocorrida)
     {
         if (id == Guid.Empty)
         {
@@ -69,12 +69,12 @@ public sealed class OutboxMessage
             throw new ExcecaoDominio("O identificador de correlacao da mensagem da outbox e obrigatorio.");
         }
 
-        if (ocorridaEmUtc == default)
+        if (ocorrida == default)
         {
             throw new ExcecaoDominio("A data de ocorrencia da mensagem da outbox e obrigatoria.");
         }
 
-        if (ocorridaEmUtc.Kind != DateTimeKind.Utc)
+        if (ocorrida.Kind != DateTimeKind.Utc)
         {
             throw new ExcecaoDominio("A data de ocorrencia da mensagem da outbox deve estar em UTC.");
         }
@@ -84,22 +84,22 @@ public sealed class OutboxMessage
             tipo.Trim(),
             conteudo,
             correlacaoId.Trim(),
-            ocorridaEmUtc);
+            ocorrida);
     }
 
-    public void MarcarComoPublicada(DateTime publicadaEmUtc)
+    public void MarcarComoPublicada(DateTime publicada)
     {
-        if (publicadaEmUtc == default)
+        if (publicada == default)
         {
             throw new ExcecaoDominio("A data de publicacao da mensagem da outbox e obrigatoria.");
         }
 
-        if (publicadaEmUtc.Kind != DateTimeKind.Utc)
+        if (publicada.Kind != DateTimeKind.Utc)
         {
             throw new ExcecaoDominio("A data de publicacao da mensagem da outbox deve estar em UTC.");
         }
 
-        PublicadaEmUtc = publicadaEmUtc;
+        Publicada = publicada;
         UltimoErro = null;
     }
 

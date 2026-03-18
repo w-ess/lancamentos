@@ -40,7 +40,7 @@ public sealed class LancamentoMapeamento : IEntityTypeConfiguration<Lancamento>
                 valor => DataLancamento.Criar(valor))
             .IsRequired();
 
-        builder.Property(lancamento => lancamento.RegistradoEmUtc)
+        builder.Property(lancamento => lancamento.Registrado)
             .HasColumnName("registrado_em_utc")
             .HasColumnType("timestamp with time zone")
             .IsRequired();

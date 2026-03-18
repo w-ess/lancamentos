@@ -5,8 +5,8 @@ internal static class JwtTokenTesteHelper
     public static string GerarToken(
         string chaveAssinatura,
         IEnumerable<string> escopos,
-        DateTimeOffset emitidoEmUtc,
-        DateTimeOffset expiraEmUtc)
+        DateTimeOffset emitido,
+        DateTimeOffset expira)
     {
         var credenciais = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chaveAssinatura)),
@@ -21,8 +21,8 @@ internal static class JwtTokenTesteHelper
 
         var token = new JwtSecurityToken(
             claims: claims,
-            notBefore: emitidoEmUtc.UtcDateTime,
-            expires: expiraEmUtc.UtcDateTime,
+            notBefore: emitido.UtcDateTime,
+            expires: expira.UtcDateTime,
             signingCredentials: credenciais);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

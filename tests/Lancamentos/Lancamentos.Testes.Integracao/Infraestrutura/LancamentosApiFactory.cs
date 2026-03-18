@@ -72,14 +72,14 @@ public sealed class LancamentosApiFactory : WebApplicationFactory<Program>, IAsy
 
     public string GerarToken(params string[] escopos)
     {
-        var emitidoEmUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
-        var expiraEmUtc = emitidoEmUtc.AddHours(1);
+        var emitido = DateTimeOffset.UtcNow.AddMinutes(-1);
+        var expira = emitido.AddHours(1);
 
         return JwtTokenTesteHelper.GerarToken(
             JwtChaveAssinatura,
             escopos,
-            emitidoEmUtc,
-            expiraEmUtc);
+            emitido,
+            expira);
     }
 
     public async Task InicializarBancoAsync()

@@ -24,7 +24,7 @@ public sealed class ProcessarLancamentoRegistradoServiceTests
         Assert.Equal(125.50m, saldo.TotalCreditos);
         Assert.Equal(0m, saldo.TotalDebitos);
         Assert.Equal(125.50m, saldo.Saldo);
-        Assert.Equal(relogio.UtcNow, saldo.AtualizadoEmUtc);
+        Assert.Equal(relogio.UtcNow, saldo.Atualizado);
         Assert.Equal("correlacao-teste", lancamentoProcessado.CorrelacaoId);
     }
 

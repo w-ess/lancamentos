@@ -17,7 +17,7 @@ public sealed class SaldosDiariosController : ControllerBase
     /// Consulta o saldo diario consolidado para a data informada.
     /// </summary>
     /// <remarks>
-    /// Requer o escopo <c>consolidado.leitura</c>. A data deve ser informada no formato <c>yyyy-MM-dd</c>.
+    /// A data deve ser informada no formato <c>yyyy-MM-dd</c>.
     /// </remarks>
     [HttpGet("{data}")]
     [Authorize(Policy = PoliticasAutorizacao.ConsolidadoLeitura)]

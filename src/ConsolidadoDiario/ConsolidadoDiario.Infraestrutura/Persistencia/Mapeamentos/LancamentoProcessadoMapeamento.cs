@@ -46,12 +46,12 @@ public sealed class LancamentoProcessadoMapeamento : IEntityTypeConfiguration<La
             .HasMaxLength(200)
             .IsRequired();
 
-        builder.Property(lancamento => lancamento.OcorridoEmUtc)
+        builder.Property(lancamento => lancamento.Ocorrido)
             .HasColumnName("ocorrido_em_utc")
             .HasColumnType("timestamp with time zone")
             .IsRequired();
 
-        builder.Property(lancamento => lancamento.ProcessadoEmUtc)
+        builder.Property(lancamento => lancamento.Processado)
             .HasColumnName("processado_em_utc")
             .HasColumnType("timestamp with time zone")
             .IsRequired();
@@ -59,7 +59,7 @@ public sealed class LancamentoProcessadoMapeamento : IEntityTypeConfiguration<La
         builder.HasIndex(lancamento => lancamento.EventoId)
             .HasDatabaseName("ix_lancamentos_processados_evento_id");
 
-        builder.HasIndex(lancamento => lancamento.ProcessadoEmUtc)
+        builder.HasIndex(lancamento => lancamento.Processado)
             .HasDatabaseName("ix_lancamentos_processados_processado_em_utc");
     }
 }

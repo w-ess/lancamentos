@@ -21,7 +21,7 @@ public sealed class ConsolidadoDiarioRepositorioEmMemoria : IConsolidadoDiarioRe
     {
         var ultimoProcessamentoUtc = _lancamentosProcessados.Count == 0
             ? (DateTime?)null
-            : _lancamentosProcessados.Values.Max(lancamento => lancamento.ProcessadoEmUtc);
+            : _lancamentosProcessados.Values.Max(lancamento => lancamento.Processado);
 
         return Task.FromResult(ultimoProcessamentoUtc);
     }

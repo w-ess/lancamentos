@@ -36,7 +36,7 @@ public sealed class LancamentosEndpointsTests
         Assert.Equal("Credito", lancamentoCriado.Tipo);
         Assert.Equal(150.75m, lancamentoCriado.Valor);
         Assert.Equal(new DateOnly(2026, 3, 17), lancamentoCriado.DataLancamento);
-        Assert.Equal(DateTimeKind.Utc, lancamentoCriado.RegistradoEmUtc.Kind);
+        Assert.Equal(DateTimeKind.Utc, lancamentoCriado.Registrado.Kind);
 
         var respostaGet = await client.GetAsync($"/api/v1/lancamentos/{lancamentoCriado.Id}");
 
@@ -136,11 +136,11 @@ public sealed class LancamentosEndpointsTests
                     .AsNoTracking()
                     .SingleOrDefaultAsync(item =>
                         item.CorrelacaoId == correlacaoId &&
-                        item.PublicadaEmUtc != null)),
+                        item.Publicada != null)),
             TimeSpan.FromSeconds(5));
 
         Assert.NotNull(mensagemSaida);
-        Assert.NotNull(mensagemSaida.PublicadaEmUtc);
+        Assert.NotNull(mensagemSaida.Publicada);
         Assert.Equal(0, mensagemSaida.TentativasPublicacao);
         Assert.Null(mensagemSaida.UltimoErro);
 
@@ -194,7 +194,7 @@ public sealed class LancamentosEndpointsTests
             TimeSpan.FromSeconds(5));
 
         Assert.NotNull(mensagemSaida);
-        Assert.Null(mensagemSaida.PublicadaEmUtc);
+        Assert.Null(mensagemSaida.Publicada);
         Assert.NotNull(mensagemSaida.UltimoErro);
         Assert.Empty(factory.PublicadorMensagens.ListarMensagensPublicadas());
     }
@@ -257,5 +257,5 @@ public sealed class LancamentosEndpointsTests
         string Tipo,
         decimal Valor,
         DateOnly DataLancamento,
-        DateTime RegistradoEmUtc);
+        DateTime Registrado);
 }

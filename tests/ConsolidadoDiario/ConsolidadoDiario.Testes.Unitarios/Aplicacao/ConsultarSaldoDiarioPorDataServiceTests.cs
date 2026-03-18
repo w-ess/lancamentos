@@ -11,11 +11,11 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
     public async Task DeveRetornarSaldoExistenteSemDefasagemQuandoUltimoProcessamentoEstiverDentroDaTolerancia()
     {
         var dataConsulta = new DateOnly(2026, 3, 17);
-        var atualizadoEmUtc = new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc);
+        var atualizado = new DateTime(2026, 3, 17, 16, 0, 0, DateTimeKind.Utc);
         var repositorio = new ConsolidadoDiarioRepositorioEmMemoria();
 
-        await repositorio.AdicionarSaldoAsync(SaldoDiario.Criar(dataConsulta, 150m, 40m, atualizadoEmUtc));
-        await repositorio.AdicionarLancamentoProcessadoAsync(CriarLancamentoProcessado(dataConsulta, atualizadoEmUtc));
+        await repositorio.AdicionarSaldoAsync(SaldoDiario.Criar(dataConsulta, 150m, 40m, atualizado));
+        await repositorio.AdicionarLancamentoProcessadoAsync(CriarLancamentoProcessado(dataConsulta, atualizado));
 
         var service = CreateService(
             repositorio,
@@ -28,7 +28,7 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
         Assert.Equal(150m, resultado.TotalCreditos);
         Assert.Equal(40m, resultado.TotalDebitos);
         Assert.Equal(110m, resultado.Saldo);
-        Assert.Equal(atualizadoEmUtc, resultado.AtualizadoEmUtc);
+        Assert.Equal(atualizado, resultado.Atualizado);
         Assert.False(resultado.Defasado);
     }
 
@@ -54,7 +54,7 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
         Assert.Equal(0m, resultado.TotalCreditos);
         Assert.Equal(0m, resultado.TotalDebitos);
         Assert.Equal(0m, resultado.Saldo);
-        Assert.Equal(ultimoProcessamentoUtc, resultado.AtualizadoEmUtc);
+        Assert.Equal(ultimoProcessamentoUtc, resultado.Atualizado);
         Assert.False(resultado.Defasado);
     }
 
@@ -62,11 +62,11 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
     public async Task DeveMarcarComoDefasadoQuandoUltimoProcessamentoExcederTolerancia()
     {
         var dataConsulta = new DateOnly(2026, 3, 17);
-        var atualizadoEmUtc = new DateTime(2026, 3, 17, 15, 50, 0, DateTimeKind.Utc);
+        var atualizado = new DateTime(2026, 3, 17, 15, 50, 0, DateTimeKind.Utc);
         var repositorio = new ConsolidadoDiarioRepositorioEmMemoria();
 
-        await repositorio.AdicionarSaldoAsync(SaldoDiario.Criar(dataConsulta, 75m, 25m, atualizadoEmUtc));
-        await repositorio.AdicionarLancamentoProcessadoAsync(CriarLancamentoProcessado(dataConsulta, atualizadoEmUtc));
+        await repositorio.AdicionarSaldoAsync(SaldoDiario.Criar(dataConsulta, 75m, 25m, atualizado));
+        await repositorio.AdicionarLancamentoProcessadoAsync(CriarLancamentoProcessado(dataConsulta, atualizado));
 
         var service = CreateService(
             repositorio,
@@ -88,7 +88,7 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
         var resultado = await service.ExecutarAsync(new DateOnly(2026, 3, 17));
 
         Assert.Equal(0m, resultado.Saldo);
-        Assert.Equal(agoraUtc, resultado.AtualizadoEmUtc);
+        Assert.Equal(agoraUtc, resultado.Atualizado);
         Assert.False(resultado.Defasado);
     }
 
@@ -106,7 +106,7 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
             });
     }
 
-    private static LancamentoProcessado CriarLancamentoProcessado(DateOnly dataLancamento, DateTime processadoEmUtc)
+    private static LancamentoProcessado CriarLancamentoProcessado(DateOnly dataLancamento, DateTime processado)
     {
         return LancamentoProcessado.Criar(
             Guid.NewGuid(),
@@ -115,7 +115,7 @@ public sealed class ConsultarSaldoDiarioPorDataServiceTests
             ValorMonetario.Criar(10m),
             dataLancamento,
             "correlacao-consulta",
-            processadoEmUtc.AddMinutes(-1),
-            processadoEmUtc);
+            processado.AddMinutes(-1),
+            processado);
     }
 }

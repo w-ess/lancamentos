@@ -30,7 +30,7 @@ public sealed class RegistrarLancamentoServiceTests
         Assert.Equal("Credito", resultado.Tipo);
         Assert.Equal(99.90m, resultado.Valor);
         Assert.Equal(new DateOnly(2026, 3, 17), resultado.DataLancamento);
-        Assert.Equal(relogio.UtcNow, resultado.RegistradoEmUtc);
+        Assert.Equal(relogio.UtcNow, resultado.Registrado);
         Assert.Equal(nameof(LancamentoRegistradoV1), outboxMessage.Tipo);
         Assert.Equal("correlacao-teste", outboxMessage.CorrelacaoId);
         Assert.Equal(resultado.Id, evento.LancamentoId);

@@ -42,11 +42,11 @@ namespace ConsolidadoDiario.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("evento_id");
 
-                    b.Property<DateTime>("OcorridoEmUtc")
+                    b.Property<DateTime>("Ocorrido")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ocorrido_em_utc");
 
-                    b.Property<DateTime>("ProcessadoEmUtc")
+                    b.Property<DateTime>("Processado")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("processado_em_utc");
 
@@ -66,7 +66,7 @@ namespace ConsolidadoDiario.Infraestrutura.Persistencia.Migrations
                     b.HasIndex("EventoId")
                         .HasDatabaseName("ix_lancamentos_processados_evento_id");
 
-                    b.HasIndex("ProcessadoEmUtc")
+                    b.HasIndex("Processado")
                         .HasDatabaseName("ix_lancamentos_processados_processado_em_utc");
 
                     b.ToTable("lancamentos_processados", (string)null);
@@ -78,7 +78,7 @@ namespace ConsolidadoDiario.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("date")
                         .HasColumnName("data");
 
-                    b.Property<DateTime>("AtualizadoEmUtc")
+                    b.Property<DateTime>("Atualizado")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("atualizado_em_utc");
 

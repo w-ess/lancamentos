@@ -10,7 +10,7 @@ public interface IOutboxMessageRepository
 
     Task MarcarComoPublicadaAsync(
         Guid mensagemId,
-        DateTime publicadaEmUtc,
+        DateTime publicada,
         CancellationToken cancellationToken = default);
 
     Task RegistrarFalhaPublicacaoAsync(

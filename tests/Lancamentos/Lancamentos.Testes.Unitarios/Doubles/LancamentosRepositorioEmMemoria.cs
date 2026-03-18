@@ -38,7 +38,7 @@ internal sealed class LancamentosRepositorioEmMemoria :
         CancellationToken cancellationToken = default)
     {
         IReadOnlyCollection<OutboxMessage> mensagens = _mensagens.Values
-            .Where(mensagem => !mensagem.Publicada)
+            .Where(mensagem => !mensagem.EstaPublicada)
             .Take(quantidadeMaxima)
             .ToArray();
 
@@ -47,10 +47,10 @@ internal sealed class LancamentosRepositorioEmMemoria :
 
     public Task MarcarComoPublicadaAsync(
         Guid mensagemId,
-        DateTime publicadaEmUtc,
+        DateTime publicada,
         CancellationToken cancellationToken = default)
     {
-        _mensagens[mensagemId].MarcarComoPublicada(publicadaEmUtc);
+        _mensagens[mensagemId].MarcarComoPublicada(publicada);
         return Task.CompletedTask;
     }
 

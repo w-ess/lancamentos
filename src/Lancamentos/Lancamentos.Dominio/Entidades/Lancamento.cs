@@ -10,13 +10,13 @@ public sealed class Lancamento
         TipoLancamento tipo,
         ValorMonetario valor,
         DataLancamento dataLancamento,
-        DateTime registradoEmUtc)
+        DateTime registrado)
     {
         Id = id;
         Tipo = tipo;
         Valor = valor;
         DataLancamento = dataLancamento;
-        RegistradoEmUtc = registradoEmUtc;
+        Registrado = registrado;
     }
 
     public Guid Id { get; }
@@ -27,15 +27,15 @@ public sealed class Lancamento
 
     public DataLancamento DataLancamento { get; }
 
-    public DateTime RegistradoEmUtc { get; }
+    public DateTime Registrado { get; }
 
     public static Lancamento Criar(
         TipoLancamento tipo,
         ValorMonetario valor,
         DataLancamento dataLancamento,
-        DateTime registradoEmUtc)
+        DateTime registrado)
     {
-        return Criar(Guid.NewGuid(), tipo, valor, dataLancamento, registradoEmUtc);
+        return Criar(Guid.NewGuid(), tipo, valor, dataLancamento, registrado);
     }
 
     public static Lancamento Criar(
@@ -43,7 +43,7 @@ public sealed class Lancamento
         TipoLancamento tipo,
         ValorMonetario valor,
         DataLancamento dataLancamento,
-        DateTime registradoEmUtc)
+        DateTime registrado)
     {
         if (id == Guid.Empty)
         {
@@ -54,16 +54,16 @@ public sealed class Lancamento
         ArgumentNullException.ThrowIfNull(valor);
         ArgumentNullException.ThrowIfNull(dataLancamento);
 
-        if (registradoEmUtc == default)
+        if (registrado == default)
         {
             throw new ExcecaoDominio("A data de registro em UTC e obrigatoria.");
         }
 
-        if (registradoEmUtc.Kind != DateTimeKind.Utc)
+        if (registrado.Kind != DateTimeKind.Utc)
         {
             throw new ExcecaoDominio("A data de registro do lancamento deve estar em UTC.");
         }
 
-        return new Lancamento(id, tipo, valor, dataLancamento, registradoEmUtc);
+        return new Lancamento(id, tipo, valor, dataLancamento, registrado);
     }
 }

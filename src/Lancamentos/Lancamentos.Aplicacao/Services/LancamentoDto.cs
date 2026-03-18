@@ -16,7 +16,7 @@ public sealed record LancamentoDto(
     [property: SwaggerSchema("Data do lancamento no formato yyyy-MM-dd.", Format = "date")]
     DateOnly DataLancamento,
     [property: SwaggerSchema("Data e hora UTC em que o lancamento foi registrado.", Format = "date-time")]
-    DateTime RegistradoEmUtc)
+    DateTime Registrado)
 {
     public static LancamentoDto FromEntity(Lancamento lancamento)
     {
@@ -27,6 +27,6 @@ public sealed record LancamentoDto(
             lancamento.Tipo.Valor,
             lancamento.Valor.Valor,
             lancamento.DataLancamento.Valor,
-            lancamento.RegistradoEmUtc);
+            lancamento.Registrado);
     }
 }

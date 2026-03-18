@@ -205,7 +205,7 @@ Variaveis importantes da collection:
 - `jwt_scope`: default `lancamentos.escrita lancamentos.leitura consolidado.leitura`
 - `saldo_data`: default `2026-03-17`
 
-Observacao: a request `Auth / Generate JWT` nao chama um endpoint de login porque o projeto nao tem login. Ela gera localmente um JWT HS256 compativel com a configuracao do sistema.
+Observacao: a request `Auth / Generate JWT` nao chama um endpoint de login porque o projeto nao tem login. Ela gera localmente um JWT HS256 compativel com a configuracao do sistema e usa uma chamada neutra apenas para disparar o script no Postman.
 
 ## Escopos exigidos
 

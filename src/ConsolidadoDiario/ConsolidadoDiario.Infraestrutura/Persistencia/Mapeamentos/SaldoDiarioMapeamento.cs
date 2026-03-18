@@ -31,7 +31,7 @@ public sealed class SaldoDiarioMapeamento : IEntityTypeConfiguration<SaldoDiario
             .HasPrecision(18, 2)
             .IsRequired();
 
-        builder.Property(saldo => saldo.AtualizadoEmUtc)
+        builder.Property(saldo => saldo.Atualizado)
             .HasColumnName("atualizado_em_utc")
             .HasColumnType("timestamp with time zone")
             .IsRequired();

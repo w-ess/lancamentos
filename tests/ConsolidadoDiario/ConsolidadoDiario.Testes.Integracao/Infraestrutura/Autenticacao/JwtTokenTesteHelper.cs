@@ -9,8 +9,8 @@ internal static class JwtTokenTesteHelper
     public static string GerarToken(
         string chaveAssinatura,
         IReadOnlyCollection<string> escopos,
-        DateTimeOffset emitidoEmUtc,
-        DateTimeOffset expiraEmUtc,
+        DateTimeOffset emitido,
+        DateTimeOffset expira,
         string subject = "usuario-teste")
     {
         var header = new Dictionary<string, object?>
@@ -22,9 +22,9 @@ internal static class JwtTokenTesteHelper
         var payload = new Dictionary<string, object?>
         {
             ["sub"] = subject,
-            ["iat"] = emitidoEmUtc.ToUnixTimeSeconds(),
-            ["nbf"] = emitidoEmUtc.ToUnixTimeSeconds(),
-            ["exp"] = expiraEmUtc.ToUnixTimeSeconds(),
+            ["iat"] = emitido.ToUnixTimeSeconds(),
+            ["nbf"] = emitido.ToUnixTimeSeconds(),
+            ["exp"] = expira.ToUnixTimeSeconds(),
             ["jti"] = Guid.NewGuid().ToString("N"),
             ["scope"] = string.Join(' ', escopos)
         };

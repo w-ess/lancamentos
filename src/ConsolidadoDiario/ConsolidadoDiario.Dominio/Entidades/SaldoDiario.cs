@@ -10,13 +10,13 @@ public sealed class SaldoDiario
         decimal totalCreditos,
         decimal totalDebitos,
         decimal saldo,
-        DateTime atualizadoEmUtc)
+        DateTime atualizado)
     {
         Data = data;
         TotalCreditos = totalCreditos;
         TotalDebitos = totalDebitos;
         Saldo = saldo;
-        AtualizadoEmUtc = atualizadoEmUtc;
+        Atualizado = atualizado;
     }
 
     public DateOnly Data { get; }
@@ -27,18 +27,18 @@ public sealed class SaldoDiario
 
     public decimal Saldo { get; private set; }
 
-    public DateTime AtualizadoEmUtc { get; private set; }
+    public DateTime Atualizado { get; private set; }
 
-    public static SaldoDiario Criar(DateOnly data, DateTime atualizadoEmUtc)
+    public static SaldoDiario Criar(DateOnly data, DateTime atualizado)
     {
-        return Criar(data, 0m, 0m, atualizadoEmUtc);
+        return Criar(data, 0m, 0m, atualizado);
     }
 
     public static SaldoDiario Criar(
         DateOnly data,
         decimal totalCreditos,
         decimal totalDebitos,
-        DateTime atualizadoEmUtc)
+        DateTime atualizado)
     {
         if (data == default)
         {
@@ -47,25 +47,25 @@ public sealed class SaldoDiario
 
         ValidarValorAgregado(totalCreditos, "O total de creditos do saldo diario nao pode ser negativo.");
         ValidarValorAgregado(totalDebitos, "O total de debitos do saldo diario nao pode ser negativo.");
-        ValidarUtc(atualizadoEmUtc, "A data de atualizacao do saldo diario deve estar em UTC.");
+        ValidarUtc(atualizado, "A data de atualizacao do saldo diario deve estar em UTC.");
 
         return new SaldoDiario(
             data,
             totalCreditos,
             totalDebitos,
             totalCreditos - totalDebitos,
-            atualizadoEmUtc);
+            atualizado);
     }
 
     public void AplicarLancamento(
         TipoLancamento tipo,
         ValorMonetario valor,
-        DateTime atualizadoEmUtc)
+        DateTime atualizado)
     {
         ArgumentNullException.ThrowIfNull(tipo);
         ArgumentNullException.ThrowIfNull(valor);
 
-        ValidarUtc(atualizadoEmUtc, "A data de atualizacao do saldo diario deve estar em UTC.");
+        ValidarUtc(atualizado, "A data de atualizacao do saldo diario deve estar em UTC.");
 
         if (tipo.EhCredito)
         {
@@ -77,7 +77,7 @@ public sealed class SaldoDiario
         }
 
         Saldo = TotalCreditos - TotalDebitos;
-        AtualizadoEmUtc = atualizadoEmUtc;
+        Atualizado = atualizado;
     }
 
     private static void ValidarValorAgregado(decimal valor, string mensagemQuandoNegativo)

@@ -12,19 +12,19 @@ public sealed class LancamentoTests
         var tipo = TipoLancamento.Criar("Credito");
         var valor = ValorMonetario.Criar(150.75m);
         var data = DataLancamento.Criar(new DateOnly(2026, 3, 17));
-        var registradoEmUtc = new DateTime(2026, 3, 17, 12, 0, 0, DateTimeKind.Utc);
+        var registrado = new DateTime(2026, 3, 17, 12, 0, 0, DateTimeKind.Utc);
 
-        var lancamento = Lancamento.Criar(tipo, valor, data, registradoEmUtc);
+        var lancamento = Lancamento.Criar(tipo, valor, data, registrado);
 
         Assert.NotEqual(Guid.Empty, lancamento.Id);
         Assert.Equal(tipo, lancamento.Tipo);
         Assert.Equal(valor, lancamento.Valor);
         Assert.Equal(data, lancamento.DataLancamento);
-        Assert.Equal(registradoEmUtc, lancamento.RegistradoEmUtc);
+        Assert.Equal(registrado, lancamento.Registrado);
     }
 
     [Fact]
-    public void DeveRejeitarRegistroQueNaoEstaEmUtc()
+    public void DeveRejeitarRegistroQueNaoEstaUtc()
     {
         var tipo = TipoLancamento.Criar("Debito");
         var valor = ValorMonetario.Criar(20m);
@@ -43,10 +43,10 @@ public sealed class LancamentoTests
         var tipo = TipoLancamento.Criar("Credito");
         var valor = ValorMonetario.Criar(80m);
         var data = DataLancamento.Criar(new DateOnly(2026, 3, 17));
-        var registradoEmUtc = new DateTime(2026, 3, 17, 12, 0, 0, DateTimeKind.Utc);
+        var registrado = new DateTime(2026, 3, 17, 12, 0, 0, DateTimeKind.Utc);
 
         var excecao = Assert.Throws<ExcecaoDominio>(() =>
-            Lancamento.Criar(Guid.Empty, tipo, valor, data, registradoEmUtc));
+            Lancamento.Criar(Guid.Empty, tipo, valor, data, registrado));
 
         Assert.NotEmpty(excecao.Message);
     }

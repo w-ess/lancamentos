@@ -35,7 +35,7 @@ namespace Lancamentos.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("date")
                         .HasColumnName("data_lancamento");
 
-                    b.Property<DateTime>("RegistradoEmUtc")
+                    b.Property<DateTime>("Registrado")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("registrado_em_utc");
 

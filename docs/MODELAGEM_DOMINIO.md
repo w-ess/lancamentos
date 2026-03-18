@@ -61,13 +61,13 @@ Atributos principais:
 - `Tipo`
 - `Valor`
 - `DataLancamento`
-- `RegistradoEmUtc`
+- `Registrado`
 
 Invariantes:
 - `Valor` deve ser maior que zero.
 - `Tipo` deve ser apenas `Credito` ou `Debito`.
 - `DataLancamento` nao pode ser vazia ou invalida.
-- `RegistradoEmUtc` e definido pelo sistema no momento da gravacao.
+- `Registrado` e definido pelo sistema no momento da gravacao.
 - apos persistido, o lancamento e imutavel para manter rastreabilidade e simplificar a consolidacao.
 
 Objetos de valor:
@@ -85,7 +85,7 @@ Atributos principais:
 - `TotalCreditos`
 - `TotalDebitos`
 - `Saldo`
-- `AtualizadoEmUtc`
+- `Atualizado`
 
 Regras:
 - para evento de `Credito`, somar em `TotalCreditos` e recalcular `Saldo`.
@@ -105,7 +105,7 @@ Campos:
 - `Tipo: string`
 - `Valor: decimal`
 - `DataLancamento: date`
-- `RegistradoEmUtc: datetime`
+- `Registrado: datetime`
 
 ### Contrato `SaldoDiario`
 
@@ -116,11 +116,11 @@ Campos:
 - `TotalCreditos: decimal`
 - `TotalDebitos: decimal`
 - `Saldo: decimal`
-- `AtualizadoEmUtc: datetime`
+- `Atualizado: datetime`
 - `Defasado: bool`
 
 Observacao:
-- quando nao houver movimento para a data consultada, a resposta retorna zeros para os valores monetarios; `AtualizadoEmUtc` representa a ultima confirmacao conhecida do processador e `Defasado` indica se o fluxo esta possivelmente atrasado.
+- quando nao houver movimento para a data consultada, a resposta retorna zeros para os valores monetarios; `Atualizado` representa a ultima confirmacao conhecida do processador e `Defasado` indica se o fluxo esta possivelmente atrasado.
 
 ### Evento `LancamentoRegistradoV1`
 
@@ -128,7 +128,7 @@ Representa a mensagem de integracao publicada pelo servico de `Lancamentos`.
 
 Campos:
 - `EventoId: Guid`
-- `OcorridoEmUtc: datetime`
+- `Ocorrido: datetime`
 - `LancamentoId: Guid`
 - `Tipo: string`
 - `Valor: decimal`
@@ -181,7 +181,7 @@ Observacoes:
 4. A API responde com sucesso sem depender da disponibilidade do `ConsolidadoDiario`.
 5. Um `OutboxMessagePublisher` em background le a tabela de saida e publica o evento em `lancamentos.eventos`.
 6. O `ProcessadorLancamentoRegistrado` consome a fila `consolidado-diario.lancamento-registrado.v1`.
-7. O servico de `ConsolidadoDiario` verifica idempotencia por `LancamentoId`, registra o `LancamentoProcessado`, aplica o movimento em `SaldoDiario` e atualiza `AtualizadoEmUtc`.
+7. O servico de `ConsolidadoDiario` verifica idempotencia por `LancamentoId`, registra o `LancamentoProcessado`, aplica o movimento em `SaldoDiario` e atualiza `Atualizado`.
 8. O endpoint `GET /api/v1/saldos-diarios/{data}` retorna a leitura consolidada da data, inclusive quando nao houver movimento.
 
 ## Decisoes de modelagem

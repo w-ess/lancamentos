@@ -4,7 +4,7 @@ namespace Lancamentos.Aplicacao.Integracao;
 
 public sealed record LancamentoRegistradoV1(
     Guid EventoId,
-    DateTime OcorridoEmUtc,
+    DateTime Ocorrido,
     Guid LancamentoId,
     string Tipo,
     decimal Valor,
@@ -17,7 +17,7 @@ public sealed record LancamentoRegistradoV1(
 
         return new LancamentoRegistradoV1(
             eventoId,
-            lancamento.RegistradoEmUtc,
+            lancamento.Registrado,
             lancamento.Id,
             lancamento.Tipo.Valor,
             lancamento.Valor.Valor,

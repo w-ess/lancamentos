@@ -41,7 +41,7 @@ public sealed class ConsultarSaldoDiarioPorDataService
             saldoDiario?.TotalCreditos ?? 0m,
             saldoDiario?.TotalDebitos ?? 0m,
             saldoDiario?.Saldo ?? 0m,
-            saldoDiario?.AtualizadoEmUtc ?? ultimaConfirmacaoUtc,
+            saldoDiario?.Atualizado ?? ultimaConfirmacaoUtc,
             agoraUtc - ultimaConfirmacaoUtc > _toleranciaDefasagem);
     }
 }
